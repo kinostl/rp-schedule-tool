@@ -9,7 +9,7 @@ export default class ConnectedServers extends React.Component {
 				<strong>Players with events this week</strong>
 				<div style={{"display":"flex", "justifyContent":"space-around"}}>
 					<div style={{"width":"25%"}}>
-						<h2>My Servers</h2>
+						<h2>My Characters</h2>
 						<ul>
 							<li><input type="checkbox"/> Server 1</li>
 							<li><input type="checkbox"/> Server 2</li>
