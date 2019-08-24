@@ -10,34 +10,39 @@ import './main.scss' // webpack must be configured to do this
 
 export default class Calendar extends React.Component {
     constructor(props) {
-		super(props)
-		this.state = {
-			"calendarView": props.view?props.view:"dayGridMonth"
-		}
-		this.calendarRef = React.createRef()
+        super(props)
+        this.state = {
+            "calendarView": props.view || "dayGridMonth"
+        }
+        this.calendarRef = React.createRef()
     }
-    
+
     render() {
         return (
             <div>
                 {
-                    this.props.multiView?(<select value={this.state.calendarView} onChange={(e) => {
-                        let newView = e.target.value
-                        let calendarApi = this.calendarRef.current.getApi()
-                        calendarApi.changeView(newView)
-                        this.setState({ "calendarView": newView })
-                    }}>
-                        <option value="dayGridMonth">Monthly</option>
-                        <option value="timeGridWeek">Weekly</option>
-                        <option value="timeGrid">Daily</option>
-                    </select>):null
+                    this.props.multiView ? (
+                        <select
+                            value={this.state.calendarView}
+                            class="form-control"
+                            onChange={(e) => {
+                                let newView = e.target.value
+                                let calendarApi = this.calendarRef.current.getApi()
+                                calendarApi.changeView(newView)
+                                this.setState({ "calendarView": newView })
+                            }}>
+                            <option value="dayGridMonth">Monthly</option>
+                            <option value="timeGridWeek">Weekly</option>
+                            <option value="timeGrid">Daily</option>
+                        </select>
+                    ) : null
                 }
                 <FullCalendar
                     ref={this.calendarRef}
-                    defaultView={this.state.calendarView}
+                    defaultView={this.props.view||"dayGridMonth"}
                     nowIndicator={true}
                     themeSystem='bootstrap'
-                    slotDuration={this.props.slotDuration}
+                    slotDuration={this.props.slotDuration||"00:30:00"}
                     selectable={this.props.selectable}
                     plugins={[
                         dayGridPlugin,
@@ -46,7 +51,7 @@ export default class Calendar extends React.Component {
                         listPlugin,
                         interactionPlugin,
                     ]}
-                    events={this.props.events} />
+                    events={this.props.events||[]} />
             </div>
         )
     }

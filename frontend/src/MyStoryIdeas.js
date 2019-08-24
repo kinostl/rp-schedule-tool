@@ -20,16 +20,16 @@ export default class MyStoryIdeas extends React.Component {
 				<div style={{"width":"50%"}}>
 					<form style={{"display":"flex","flexDirection":"column"}}>
 						<label>Title</label>
-						<input type="text"/>
+						<input class="form-control" type="text"/>
 						<label>Character</label>
-						<select>
+						<select class="form-control">
 							<option>Character 1 (Server 1)</option>
 							<option>Character 1 (Server 2)</option>
 						</select>
 						<label>Description (Markdown compatible)</label>
-						<textarea></textarea>
-						<input type="submit" value="Add Story Idea"/>
-						<input type="button" value="Delete Story Idea"/>
+						<textarea class="form-control"></textarea>
+						<input class="btn btn-primary" type="submit" value="Add Story Idea"/>
+						<input class="btn btn-danger" type="button" value="Delete Story Idea"/>
 					</form>
 				</div>
 			</div>

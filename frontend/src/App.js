@@ -51,12 +51,12 @@ export default class App extends React.Component {
 
 		return (
 			<div style={{"width":"75%","marginLeft":"auto","marginRight":"auto"}}>
-				<menu style={{"display":"flex","justifyContent":"space-around"}}>
-					<li><button onClick={(e)=> this.setSection(e,'MyAvailability')}>My Availability</button></li>
-					<li><button onClick={(e)=> this.setSection(e,'ConnectedServers')}>Connected Servers</button></li>
-					<li><button onClick={(e)=> this.setSection(e,'MySchedule')}>My Schedule</button></li>
-					<li><button onClick={(e)=> this.setSection(e,'MyCharacters')}>My Characters</button></li>
-					<li><button onClick={(e)=> this.setSection(e,'MyStoryIdeas')}>My Story Ideas</button></li>
+				<menu style={{"display":"flex","justifyContent":"space-around","listStyle":"none"}}>
+					<li><button class="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyAvailability')}>My Availability</button></li>
+					<li><button class="btn btn-secondary" onClick={(e)=> this.setSection(e,'ConnectedServers')}>Connected Servers</button></li>
+					<li><button class="btn btn-secondary" onClick={(e)=> this.setSection(e,'MySchedule')}>My Schedule</button></li>
+					<li><button class="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyCharacters')}>My Characters</button></li>
+					<li><button class="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyStoryIdeas')}>My Story Ideas</button></li>
 				</menu>
 				{displayedSection}
 			</div>
