@@ -24,7 +24,7 @@ export default class Calendar extends React.Component {
                     this.props.multiView ? (
                         <select
                             value={this.state.calendarView}
-                            class="form-control"
+                            className="form-control"
                             onChange={(e) => {
                                 let newView = e.target.value
                                 let calendarApi = this.calendarRef.current.getApi()
