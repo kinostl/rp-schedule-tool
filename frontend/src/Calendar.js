@@ -8,30 +8,25 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
 
 import './main.scss' // webpack must be configured to do this
 
-export default class Calendar extends React.Component {
-    render() {
-        return (
-            <div>
-                <div className="form-group">
-                    <FullCalendar
-                        {...this.props}
-                        defaultView={this.props.defaultView||"dayGridMonth"}
-                        header={{
-                          left: 'prev,next today',
-                          center: 'title',
-                          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-                        }}
-                        nowIndicator={true}
-                        themeSystem='bootstrap'
-                        plugins={[
-                            dayGridPlugin,
-                            timeGridPlugin,
-                            bootstrapPlugin,
-                            listPlugin,
-                            interactionPlugin,
-                        ]}/>
-                </div>
-            </div>
-        )
-    }
-}
+const Calendar = React.forwardRef((props, ref) => (
+    < FullCalendar
+        {...props}
+        ref={ref}
+        defaultView={props.defaultView || "dayGridMonth"}
+        header={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        }}
+        nowIndicator={true}
+        themeSystem='bootstrap'
+        plugins={
+            [
+                dayGridPlugin,
+                timeGridPlugin,
+                bootstrapPlugin,
+                listPlugin,
+                interactionPlugin,
+            ]} />))
+
+export default Calendar

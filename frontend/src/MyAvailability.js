@@ -6,11 +6,8 @@ export default class MyAvailability extends React.Component {
 		super()
 		this.state = {
 			"selected_range": null,
-			"events": [
-				{ date: '2019-08-23' },
-				{ date: '2019-08-25' }
-			]
 		}
+		this.calRef = React.createRef()
 	}
 
 	render() {
@@ -37,22 +34,37 @@ export default class MyAvailability extends React.Component {
 							: (<div className="form-group">&nbsp;</div>)
 						}
 						<div className="form-group" style={{ "display": "flex", "justifyContent": "space-around" }}>
-							<button className="btn btn-success" onClick={(e) => {
-								this.setState({
-									"events":this.state.events.concat(this.state.selected_range)
-								})
-							}}>Available</button>
-							<button className="btn btn-danger">Unavailable</button>
+							<button className="btn btn-success" onClick={() => {
+								let calApi = this.calRef.current.getApi()
+								calApi.addEvent(this.state.selected_range)
+							}}>
+								Available
+							</button>
+							<button className="btn btn-danger">
+								Unavailable
+							</button>
+							<button className="btn btn-primary" onClick={() => {
+								let calApi = this.calRef.current.getApi()
+								let events = calApi.getEvents()
+								console.log(events)
+							}}>
+								Save
+							</button>
 						</div>
 						<Calendar
+							ref={this.calRef}
 							defaultView="timeGridWeek"
 							selectable={true}
+							editable={true}
 							select={(selectInfo) => {
 								this.setState({
 									"selected_range": selectInfo
 								})
 							}}
-							events={this.state.events} />
+							events={[
+								{ date: '2019-08-23' },
+								{ date: '2019-08-25' }
+							]} />
 					</div>
 				</div>
 			</div>
