@@ -22,7 +22,7 @@ export default class ConnectedServers extends React.Component {
 
 					<div style={{ "width": "50%" }}>
 						<Calendar
-							view="listWeek"
+							defaultView="listWeek"
 							events={[
 								{ title: 'Janice - Mjorln eats', date: '2019-08-22' },
 								{ title: 'Craig - Jinks buys a car', date: '2019-08-24' }

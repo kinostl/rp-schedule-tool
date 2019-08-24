@@ -22,7 +22,7 @@ export default class MyStoryIdeas extends React.Component {
 						<label>Title</label>
 						<input className="form-control" type="text"/>
 						<label>Character</label>
-						<select className="form-control">
+						<select className="custom-select">
 							<option>Character 1 (Server 1)</option>
 							<option>Character 1 (Server 2)</option>
 						</select>

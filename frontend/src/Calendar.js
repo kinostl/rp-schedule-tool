@@ -20,38 +20,31 @@ export default class Calendar extends React.Component {
     render() {
         return (
             <div>
-                {
-                    this.props.multiView ? (
-                        <select
-                            value={this.state.calendarView}
-                            className="form-control"
-                            onChange={(e) => {
-                                let newView = e.target.value
-                                let calendarApi = this.calendarRef.current.getApi()
-                                calendarApi.changeView(newView)
-                                this.setState({ "calendarView": newView })
-                            }}>
-                            <option value="dayGridMonth">Monthly</option>
-                            <option value="timeGridWeek">Weekly</option>
-                            <option value="timeGrid">Daily</option>
-                        </select>
-                    ) : null
-                }
-                <FullCalendar
-                    ref={this.calendarRef}
-                    defaultView={this.props.view||"dayGridMonth"}
-                    nowIndicator={true}
-                    themeSystem='bootstrap'
-                    slotDuration={this.props.slotDuration||"00:30:00"}
-                    selectable={this.props.selectable}
-                    plugins={[
-                        dayGridPlugin,
-                        timeGridPlugin,
-                        bootstrapPlugin,
-                        listPlugin,
-                        interactionPlugin,
-                    ]}
-                    events={this.props.events||[]} />
+                <div className="form-group">
+                    <FullCalendar
+                        ref={this.calendarRef}
+                        defaultView={this.props.defaultView||"dayGridMonth"}
+                        header={{
+                          left: 'prev,next today',
+                          center: 'title',
+                          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                        }}
+                        nowIndicator={true}
+                        themeSystem='bootstrap'
+                        dateClick={this.props.dateClick}
+                        select={this.props.select}
+                        eventClick={this.props.eventClick}
+                        slotDuration={this.props.slotDuration || "00:30:00"}
+                        selectable={this.props.selectable}
+                        plugins={[
+                            dayGridPlugin,
+                            timeGridPlugin,
+                            bootstrapPlugin,
+                            listPlugin,
+                            interactionPlugin,
+                        ]}
+                        events={this.props.events || []} />
+                </div>
             </div>
         )
     }

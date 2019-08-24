@@ -22,7 +22,7 @@ export default class MyCharacters extends React.Component {
 						<label>Name</label>
 						<input className="form-control" type="text"/>
 						<label>Server</label>
-						<select className="form-control">
+						<select className="custom-select">
 							<option>Server 1</option>
 							<option>Server 2</option>
 						</select>

@@ -19,7 +19,6 @@ export default class MySchedule extends React.Component {
 					</div>
 					<div style={{ "width": "50%" }}>
 						<Calendar 
-						multiView={true}
 						events={[
                         { title: 'event 1', date: '2019-08-24' },
                         { title: 'event 2', date: '2019-08-26' }
