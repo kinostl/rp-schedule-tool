@@ -9,20 +9,12 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
 import './main.scss' // webpack must be configured to do this
 
 export default class Calendar extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            "calendarView": props.view || "dayGridMonth"
-        }
-        this.calendarRef = React.createRef()
-    }
-
     render() {
         return (
             <div>
                 <div className="form-group">
                     <FullCalendar
-                        ref={this.calendarRef}
+                        {...this.props}
                         defaultView={this.props.defaultView||"dayGridMonth"}
                         header={{
                           left: 'prev,next today',
@@ -31,19 +23,13 @@ export default class Calendar extends React.Component {
                         }}
                         nowIndicator={true}
                         themeSystem='bootstrap'
-                        dateClick={this.props.dateClick}
-                        select={this.props.select}
-                        eventClick={this.props.eventClick}
-                        slotDuration={this.props.slotDuration || "00:30:00"}
-                        selectable={this.props.selectable}
                         plugins={[
                             dayGridPlugin,
                             timeGridPlugin,
                             bootstrapPlugin,
                             listPlugin,
                             interactionPlugin,
-                        ]}
-                        events={this.props.events || []} />
+                        ]}/>
                 </div>
             </div>
         )

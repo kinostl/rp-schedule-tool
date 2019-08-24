@@ -45,7 +45,7 @@ export default class MyAvailability extends React.Component {
 							<button className="btn btn-danger">Unavailable</button>
 						</div>
 						<Calendar
-							view="timeGridWeek"
+							defaultView="timeGridWeek"
 							selectable={true}
 							select={(selectInfo) => {
 								this.setState({
