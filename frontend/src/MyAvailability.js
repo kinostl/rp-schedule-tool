@@ -1,10 +1,11 @@
 import React from 'react'
 import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'; // for selectable
+import timeGridPlugin from '@fullcalendar/timegrid';
 
 import './main.scss' // webpack must be configured to do this
 
-export default class SetFreeTime extends React.Component {
+export default class MyAvailability extends React.Component {
 
 	render() {
 		return (
@@ -23,7 +24,15 @@ export default class SetFreeTime extends React.Component {
 				</div>
 
 				<div style={{"width":"50%"}}>
-					<FullCalendar defaultView="dayGridMonth" plugins={[ dayGridPlugin ]}
+					<FullCalendar 
+					defaultView="timeGridWeek" 
+					slotDuration="00:15:00"
+					nowIndicator={true}
+					selectable={true}
+					plugins={[
+						timeGridPlugin,
+						interactionPlugin,
+					]}
 					events={[
 						{ title: 'event 1', date: '2019-08-23' },
 						{ title: 'event 2', date: '2019-08-25' }

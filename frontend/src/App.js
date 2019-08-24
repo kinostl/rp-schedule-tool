@@ -1,10 +1,10 @@
 import React from 'react'
 
-import SetFreeTime from './SetFreeTime'
 import MySchedule from './MySchedule'
 import ConnectedServers from './ConnectedServers'
 import MyCharacters from './MyCharacters';
 import MyStoryIdeas from './MyStoryIdeas';
+import MyAvailability from './MyAvailability';
 
 export default class App extends React.Component {
 	constructor(){
@@ -25,8 +25,8 @@ export default class App extends React.Component {
 	render() {
 		let displayedSection
 		switch(this.state.section){
-			case "SetFreeTime":
-				displayedSection = (<SetFreeTime/>)
+			case "MyAvailability":
+				displayedSection = (<MyAvailability/>)
 				break;
 			case "ConnectedServers":
 				displayedSection = (<ConnectedServers/>)
@@ -41,14 +41,18 @@ export default class App extends React.Component {
 				displayedSection = (<MyStoryIdeas/>)
 				break;
 			default:
-				displayedSection = (<div>Hello World</div>)
+				displayedSection = (<div>Hi, tester! Go ahead and click around.
+					 This is a tool to help you schedule Roleplaying sessions! 
+					 You can add your characters, story ideas, and list your available timeslots.<br/>
+					 <strong>At the moment, nothing is functional. This is purely display.</strong>
+					 </div>)
 				break;
 		}
 
 		return (
 			<div style={{"width":"75%","marginLeft":"auto","marginRight":"auto"}}>
 				<menu style={{"display":"flex","justifyContent":"space-around"}}>
-					<li><button onClick={(e)=> this.setSection(e,'SetFreeTime')}>My Availability</button></li>
+					<li><button onClick={(e)=> this.setSection(e,'MyAvailability')}>My Availability</button></li>
 					<li><button onClick={(e)=> this.setSection(e,'ConnectedServers')}>Connected Servers</button></li>
 					<li><button onClick={(e)=> this.setSection(e,'MySchedule')}>My Schedule</button></li>
 					<li><button onClick={(e)=> this.setSection(e,'MyCharacters')}>My Characters</button></li>
