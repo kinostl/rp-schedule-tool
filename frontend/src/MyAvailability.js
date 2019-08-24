@@ -20,39 +20,39 @@ export default class MyAvailability extends React.Component {
 	addEvent = (newEvent) => {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
-		if(!newEvent){
-			newEvent = this.state.selected_range
-		}
+		console.log("newE", Object.assign({},newEvent))
 		let makeNewEvent = true
 		for (let event of events) {
 			let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 			if (event.allDay === false) {
-				if (startsInEvent) {
-					makeNewEvent = false
-					event.setEnd(newEvent.end)
-				}
-				if (endsInEvent) {
-					makeNewEvent = false
-					event.setStart(newEvent.start)
-				}
 				if (eventInNewEvent) {
 					event.remove()
+				}
+				else {
+					if (startsInEvent) {
+						makeNewEvent = false
+						event.setEnd(newEvent.end)
+					}
+					else if (endsInEvent) {
+						makeNewEvent = false
+						event.setStart(newEvent.start)
+					}
 				}
 			}
 		}
 		if (makeNewEvent) {
-			calApi.addEvent(this.state.selected_range)
+			calApi.addEvent(newEvent)
 		}
 	}
-	
+
 	removeEvent = () => {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
 		let newEvent = this.state.selected_range
 		for (let event of events) {
 			console.log({
-				"event":event,
-				"newEvent":newEvent
+				"event": event,
+				"newEvent": newEvent
 			})
 			let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 			if (startsInEvent) {
@@ -68,11 +68,17 @@ export default class MyAvailability extends React.Component {
 	}
 
 	handleResize = (info) => {
+		this.setState({"selected_range":null})
 		this.addEvent(info.event)
 	}
 
 	handleDrop = (info) => {
+		this.setState({"selected_range":null})
 		this.addEvent(info.event)
+	}
+
+	handleAdd = () => {
+		this.addEvent(this.state.selected_range)
 	}
 
 	render() {
@@ -99,7 +105,7 @@ export default class MyAvailability extends React.Component {
 							: (<div className="form-group">&nbsp;</div>)
 						}
 						<div className="form-group" style={{ "display": "flex", "justifyContent": "space-around" }}>
-							<button className="btn btn-success" onClick={this.addEvent}>Available</button>
+							<button className="btn btn-success" onClick={this.handleAdd}>Available</button>
 							<button className="btn btn-danger" onClick={this.removeEvent}>Unavailable</button>
 							<button className="btn btn-primary" onClick={() => {
 								let calApi = this.calRef.current.getApi()
