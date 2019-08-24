@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/rp-schedule-tool/precache-manifest.1bd827250e47429c1d1d533ca17d20fc.js"
+  "/rp-schedule-tool/precache-manifest.e3995d4cd3a6176ea8366a224c323de6.js"
 );
 
 self.addEventListener('message', (event) => {
