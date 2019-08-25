@@ -1,6 +1,5 @@
 import React from 'react'
 
-import MySchedule from './MySchedule'
 import ConnectedServers from './ConnectedServers'
 import MyCharacters from './MyCharacters';
 import MyStoryIdeas from './MyStoryIdeas';
@@ -31,9 +30,6 @@ export default class App extends React.Component {
 			case "ConnectedServers":
 				displayedSection = (<ConnectedServers/>)
 				break;
-			case "MySchedule":
-				displayedSection = (<MySchedule/>)
-				break;
 			case "MyCharacters":
 				displayedSection = (<MyCharacters/>)
 				break;
@@ -54,7 +50,6 @@ export default class App extends React.Component {
 				<menu style={{"display":"flex","justifyContent":"space-around","listStyle":"none"}}>
 					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyAvailability')}>My Availability</button></li>
 					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'ConnectedServers')}>Connected Servers</button></li>
-					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MySchedule')}>My Schedule</button></li>
 					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyCharacters')}>My Characters</button></li>
 					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyStoryIdeas')}>My Story Ideas</button></li>
 				</menu>
