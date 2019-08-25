@@ -47,34 +47,38 @@ export default class MyAvailability extends React.Component {
 	addEvent = (newEvent) => {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
-		let makeNewEvent = true
+		let makeNewEvent = {}
+		if (!newEvent.extendedProps) {
+			for (const key in this.state.servers) {
+				makeNewEvent[key] = true
+			}
+		}
 		for (const event of events) {
 			if (event.allDay === false) {
 				let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 				if (newEvent.extendedProps) {
 					if(newEvent.extendedProps.server === event.extendedProps.server){
-						makeNewEvent = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
+						this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
 					}
 				}else{
 					for (const key in this.state.servers) {
 						const val = this.state.servers[key]
 						if (val) {
 							if(event.extendedProps.server === key){
-								makeNewEvent = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
+								makeNewEvent[key] = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
 							}
 						}
 					}
 				}
 			}
 		}
-		if (makeNewEvent) {
-			for (const key in this.state.servers) {
-				const val = this.state.servers[key]
-				if(val){
-					let createdEvent = calApi.addEvent(newEvent)
-					createdEvent.setProp("title",key)
-					createdEvent.setExtendedProp("server",key)
-				}
+
+		for (const key in this.state.servers) {
+			const val = this.state.servers[key]
+			if (val && makeNewEvent[key]) {
+				let createdEvent = calApi.addEvent(newEvent)
+				createdEvent.setProp("title", key)
+				createdEvent.setExtendedProp("server", key)
 			}
 		}
 		this.setState({"selected_range":null})
