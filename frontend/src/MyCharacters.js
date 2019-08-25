@@ -7,13 +7,13 @@ export default class MyCharacters extends React.Component {
 			<div>
 				<h1>My Characters</h1>
 			<div style={{"display":"flex", "justifyContent":"space-around"}}>
-				<div style={{"width":"25%"}}>
-					<ul>
-						<li><input type="checkbox"/> Character 1</li>
-						<li><input type="checkbox"/> Character 2</li>
-						<li><input type="checkbox"/> Character 3</li>
-						<li><input type="checkbox" checked/> Character 4</li>
-						<li><input type="checkbox"/> Character 5</li>
+				<div>
+					<ul style={{"listStyle":"none"}}>
+						<li><button class="btn btn-link"> Character 1</button></li>
+						<li><button class="btn btn-link"> Character 2</button></li>
+						<li><button class="btn btn-link"> Character 3</button></li>
+						<li><button class="btn btn-link"> Character 4</button></li>
+						<li><button class="btn btn-link"> Character 5</button></li>
 					</ul>
 				</div>
 
