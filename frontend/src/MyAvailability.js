@@ -24,27 +24,42 @@ export default class MyAvailability extends React.Component {
 		return [startsInEvent, endsInEvent, eventInNewEvent]
 	}
 
-	handleConflict = (event, newEvent, eventInNewEvent, startsInEvent, endsInEvent) => {
+	handleConflict = (event, newEvent, eventInNewEvent, startsInEvent, endsInEvent, remove) => {
 		let makeNewEvent = true
 		if (eventInNewEvent) {
-				makeNewEvent = false
-				event.setEnd(newEvent.end)
-				event.setStart(newEvent.start)
+				if(!remove){
+					makeNewEvent = false
+					event.setEnd(newEvent.end)
+					event.setStart(newEvent.start)
+				}else{
+					event.remove()
+				}
 		}
 		else {
 			if (startsInEvent) {
-				makeNewEvent = false
-				event.setEnd(newEvent.end)
+				if (!remove) {
+					makeNewEvent = false
+					event.setEnd(newEvent.end)
+				} else {
+					event.setEnd(newEvent.start)
+				}
 			}
 			if (endsInEvent) {
-				makeNewEvent = false
-				event.setStart(newEvent.start)
+				if (!remove) {
+					makeNewEvent = false
+					event.setStart(newEvent.start)
+				} else {
+					event.setStart(newEvent.end)
+				}
 			}
+		}
+		if(remove){
+			return false
 		}
 		return makeNewEvent
 	}
 
-	addEvent = (newEvent) => {
+	handleEvent = (newEvent,remove) => {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
 		let makeNewEvent = {}
@@ -58,14 +73,14 @@ export default class MyAvailability extends React.Component {
 				let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 				if (newEvent.extendedProps) {
 					if(newEvent.extendedProps.server === event.extendedProps.server){
-						this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
+						this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent, remove)
 					}
 				}else{
 					for (const key in this.state.servers) {
 						const val = this.state.servers[key]
 						if (val) {
 							if(event.extendedProps.server === key){
-								makeNewEvent[key] = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
+								makeNewEvent[key] = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent, remove)
 							}
 						}
 					}
@@ -73,47 +88,36 @@ export default class MyAvailability extends React.Component {
 			}
 		}
 
-		for (const key in this.state.servers) {
-			const val = this.state.servers[key]
-			if (val && makeNewEvent[key]) {
-				let createdEvent = calApi.addEvent(newEvent)
-				createdEvent.setProp("title", key)
-				createdEvent.setExtendedProp("server", key)
+		if(!remove){
+			for (const key in this.state.servers) {
+				const val = this.state.servers[key]
+				if (val && makeNewEvent[key]) {
+					let createdEvent = calApi.addEvent(newEvent)
+					createdEvent.setProp("title", key)
+					createdEvent.setExtendedProp("server", key)
+				}
 			}
 		}
 		this.setState({"selected_range":null})
 	}
 
-	removeEvent = () => {
-		let calApi = this.calRef.current.getApi()
-		let events = calApi.getEvents()
-		let newEvent = this.state.selected_range
-		for (const event of events) {
-			let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
-			if (startsInEvent) {
-				event.setEnd(newEvent.start)
-			}
-			if (endsInEvent) {
-				event.setStart(newEvent.end)
-			}
-			if (eventInNewEvent) {
-				event.remove()
-			}
+	handleRemove = () => {
+		if(this.state.selected_range){
+			this.handleEvent(this.state.selected_range, true)
 		}
-		this.setState({"selected_range":null})
 	}
 
 	handleResize = (info) => {
-		this.addEvent(info.event)
+		this.handleEvent(info.event)
 	}
 
 	handleDrop = (info) => {
-		this.addEvent(info.event)
+		this.handleEvent(info.event)
 	}
 
 	handleAdd = () => {
 		if(this.state.selected_range){
-			this.addEvent(this.state.selected_range)
+			this.handleEvent(this.state.selected_range)
 		}
 	}
 
@@ -146,7 +150,7 @@ export default class MyAvailability extends React.Component {
 					<div style={{ "width": "50%" }}>
 						<div className="form-group" style={{ "display": "flex", "justifyContent": "space-around" }}>
 							<button className="btn btn-success" onClick={this.handleAdd}>Available</button>
-							<button className="btn btn-danger" onClick={this.removeEvent}>Unavailable</button>
+							<button className="btn btn-danger" onClick={this.handleRemove}>Unavailable</button>
 							<button className="btn btn-primary" onClick={() => {
 								let calApi = this.calRef.current.getApi()
 								let events = calApi.getEvents()
