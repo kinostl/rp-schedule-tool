@@ -43,6 +43,7 @@ export default class MyAvailability extends React.Component {
 		if (makeNewEvent) {
 			calApi.addEvent(newEvent)
 		}
+		this.setState({"selected_range":null})
 	}
 
 	removeEvent = () => {
@@ -65,15 +66,14 @@ export default class MyAvailability extends React.Component {
 				event.remove()
 			}
 		}
+		this.setState({"selected_range":null})
 	}
 
 	handleResize = (info) => {
-		this.setState({"selected_range":null})
 		this.addEvent(info.event)
 	}
 
 	handleDrop = (info) => {
-		this.setState({"selected_range":null})
 		this.addEvent(info.event)
 	}
 
@@ -110,6 +110,7 @@ export default class MyAvailability extends React.Component {
 							<button className="btn btn-primary" onClick={() => {
 								let calApi = this.calRef.current.getApi()
 								let events = calApi.getEvents()
+								console.log("events",events)
 							}}>
 								Save
 							</button>
@@ -119,6 +120,7 @@ export default class MyAvailability extends React.Component {
 							defaultView="timeGridWeek"
 							selectable={true}
 							editable={true}
+							allDaySlot={false}
 							select={(selectInfo) => {
 								this.setState({
 									"selected_range": selectInfo

@@ -17,7 +17,7 @@ const Calendar = React.forwardRef((props, ref) => (
         header={{
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            right: props.editable?'timeGridWeek,timeGridDay':'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         }}
         nowIndicator={true}
         themeSystem='bootstrap'
