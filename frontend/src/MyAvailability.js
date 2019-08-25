@@ -6,6 +6,13 @@ export default class MyAvailability extends React.Component {
 		super()
 		this.state = {
 			"selected_range": null,
+			"servers":{
+				"Server 1":true,
+				"Server 2":false,
+				"Server 3":false,
+				"Server 4":false,
+				"Server 5":false,
+			}
 		}
 		this.calRef = React.createRef()
 	}
@@ -17,31 +24,58 @@ export default class MyAvailability extends React.Component {
 		return [startsInEvent, endsInEvent, eventInNewEvent]
 	}
 
+	handleConflict = (event, newEvent, eventInNewEvent, startsInEvent, endsInEvent) => {
+		let makeNewEvent = true
+		if (eventInNewEvent) {
+				makeNewEvent = false
+				event.setEnd(newEvent.end)
+				event.setStart(newEvent.start)
+		}
+		else {
+			if (startsInEvent) {
+				makeNewEvent = false
+				event.setEnd(newEvent.end)
+			}
+			if (endsInEvent) {
+				makeNewEvent = false
+				event.setStart(newEvent.start)
+			}
+		}
+		return makeNewEvent
+	}
+
 	addEvent = (newEvent) => {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
-		console.log("newE", Object.assign({},newEvent))
 		let makeNewEvent = true
-		for (let event of events) {
-			let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
+		for (const event of events) {
 			if (event.allDay === false) {
-				if (eventInNewEvent) {
-					event.remove()
-				}
-				else {
-					if (startsInEvent) {
-						makeNewEvent = false
-						event.setEnd(newEvent.end)
+				let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
+				if (newEvent.extendedProps) {
+					if(newEvent.extendedProps.server === event.extendedProps.server){
+						makeNewEvent = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
 					}
-					else if (endsInEvent) {
-						makeNewEvent = false
-						event.setStart(newEvent.start)
+				}else{
+					for (const key in this.state.servers) {
+						const val = this.state.servers[key]
+						if (val) {
+							if(event.extendedProps.server === key){
+								makeNewEvent = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent)
+							}
+						}
 					}
 				}
 			}
 		}
 		if (makeNewEvent) {
-			calApi.addEvent(newEvent)
+			for (const key in this.state.servers) {
+				const val = this.state.servers[key]
+				if(val){
+					let createdEvent = calApi.addEvent(newEvent)
+					createdEvent.setProp("title",key)
+					createdEvent.setExtendedProp("server",key)
+				}
+			}
 		}
 		this.setState({"selected_range":null})
 	}
@@ -50,11 +84,7 @@ export default class MyAvailability extends React.Component {
 		let calApi = this.calRef.current.getApi()
 		let events = calApi.getEvents()
 		let newEvent = this.state.selected_range
-		for (let event of events) {
-			console.log({
-				"event": event,
-				"newEvent": newEvent
-			})
+		for (const event of events) {
 			let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 			if (startsInEvent) {
 				event.setEnd(newEvent.start)
@@ -78,10 +108,26 @@ export default class MyAvailability extends React.Component {
 	}
 
 	handleAdd = () => {
-		this.addEvent(this.state.selected_range)
+		if(this.state.selected_range){
+			this.addEvent(this.state.selected_range)
+		}
 	}
 
 	render() {
+		let checkBoxes = []
+		for(const key in this.state.servers){
+			const val = this.state.servers[key]
+			checkBoxes.push(<li key={key}>
+				<input checked={val} onChange={(e) => {
+					this.setState({
+						"servers": {
+							...this.state.servers,
+							[key]: e.target.checked
+						}
+					})
+				}} type="checkbox" /> {key}
+			</li>)
+		}
 		return (
 			<div>
 				<h1>Set Availability</h1>
@@ -90,20 +136,10 @@ export default class MyAvailability extends React.Component {
 						<h2>My Servers</h2>
 						<ul style={{ "listStyle": "none" }}>
 							<li><input type="checkbox" /> Select All</li>
-							<li><input type="checkbox" /> Server 1</li>
-							<li><input type="checkbox" /> Server 2</li>
-							<li><input type="checkbox" /> Server 3</li>
-							<li><input type="checkbox" checked /> Server 4</li>
-							<li><input type="checkbox" /> Server 5</li>
+							{checkBoxes}
 						</ul>
 					</div>
 					<div style={{ "width": "50%" }}>
-						{this.state.selected_range ?
-							(<div className="form-group" style={{ "textAlign": "center" }}>
-								{this.state.selected_range.startStr} to {this.state.selected_range.endStr}
-							</div>)
-							: (<div className="form-group">&nbsp;</div>)
-						}
 						<div className="form-group" style={{ "display": "flex", "justifyContent": "space-around" }}>
 							<button className="btn btn-success" onClick={this.handleAdd}>Available</button>
 							<button className="btn btn-danger" onClick={this.removeEvent}>Unavailable</button>
