@@ -23,7 +23,7 @@ return function (App $app) {
         $config = new Config([
             'username' => 'slim',
             'password' => 'password',
-            'database' => 'Chinook',
+            'database' => 'rp_schedule_tool',
             'basePath' => '/api',
         ]);
         $api = new Api($config);

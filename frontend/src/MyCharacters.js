@@ -1,8 +1,30 @@
 import React from 'react'
+import api from './api'
+import {Formik, Form, Field, ErrorMessage } from 'formik'
 
 export default class MyCharacters extends React.Component {
+	constructor(){
+		super()
+		this.state={
+			"loading":true,
+			"characters":[]
+		}
+	}
+
+	componentDidMount(){
+		api.get('/characters')
+		.then((res)=>{
+			this.setState({
+				"loading":false,
+				"characters":res.data
+			})
+		})
+	}
 
 	render() {
+		if(this.state.loading){
+			return <div>Loading</div>
+		}
 		return (
 			<div>
 				<h1>My Characters</h1>
@@ -18,19 +40,37 @@ export default class MyCharacters extends React.Component {
 				</div>
 
 				<div style={{"width":"50%"}}>
-					<form style={{"display":"flex","flexDirection":"column"}}>
-						<label>Name</label>
-						<input className="form-control" type="text"/>
-						<label>Server</label>
-						<select className="custom-select">
-							<option>Server 1</option>
-							<option>Server 2</option>
-						</select>
-						<label>Description (Markdown compatible)</label>
-						<textarea className="form-control"></textarea>
-						<input className="btn btn-primary" type="submit" value="Add Character"/>
-						<input className="btn btn-danger" type="button" value="Delete Character"/>
-					</form>
+						<Formik
+							initialValues={{
+								'name': '',
+								'ServerId': '',
+								'description': '',
+							}}
+							onSubmit={(values,{setSubmitting})=>{
+								api.post('/characters', {
+									"UserId": 1,
+									...values
+								}).then((res) => {
+									setSubmitting(false)
+								})
+							}}
+						>
+							{({ isSubmitting }) => (
+								<Form style={{ "display": "flex", "flexDirection": "column" }}>
+									<label>Name</label>
+									<Field className="form-control" type="text" name="name" />
+									<label>Server</label>
+									<Field component="select" name="ServerId" className="custom-select">
+										<option value={1}>Server 1</option>
+										<option value={2}>Server 2</option>
+									</Field>
+									<label>Description (Markdown compatible)</label>
+									<Field type="textarea" name="description" className="form-control" />
+									<button type="submit" className="btn btn-primary" disabled={isSubmitting}>Add Character</button>
+									<button type="submit" className="btn btn-primary">Delete Character</button>
+								</Form>
+							)}
+						</Formik>
 				</div>
 			</div>
 			</div>
