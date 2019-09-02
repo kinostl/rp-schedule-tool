@@ -37,7 +37,7 @@ if (
     || $path == 'logout'
     || $path == 'me'
 ) {
-    if ($method == 'GET' && $path == 'login') {
+    if ($method == 'GET' && $path == 'logout') {
         unset($_SESSION['user']);
     } elseif ($method == 'GET' && $path == 'login') {
         if (!isset($_GET['code'])) {
