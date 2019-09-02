@@ -29,6 +29,7 @@ if (
             'clientId' => '',
             'clientSecret' => '',
             'redirectUri' => '',
+            'scope'=>['identify','guilds']
         ]);
 
         if (!isset($_GET['code'])) {
@@ -49,8 +50,15 @@ if (
             // Step 3. Set the session user to the user's profile with the provided token
             try {
                 unset($_SESSION['user']);
+                unset($_SESSION['servers']);
                 $user = $provider->getResourceOwner($token);
+                $servers = $provider->getAuthenticatedRequest(
+                    'GET',
+                    'https://discordapp.com/api/users/@me/guilds',
+                    $token
+                );
                 $_SESSION['user'] = $user;
+                $_SESSION['servers'] = $servers;
                 header('Location: http://localhost:3000/auth');
                 exit('Redirecting to Webapp Home Page');
             } catch (Exception $e) {
@@ -60,7 +68,12 @@ if (
     } elseif ($method == 'GET' && $path == 'me') {
         if (isset($_SESSION['user'])) {
             $responder = new JsonResponder();
-            $response = $responder->success($_SESSION['user']);
+            $user = $_SESSION['user'];
+            $servers = $_SESSION['servers'];
+            $response = $responder->success([
+                "user"=>$user,
+                "servers"=>$servers
+            ]);
         } else {
             $responder = new JsonResponder();
             $response = $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
@@ -77,7 +90,7 @@ if (
             'database' => 'rp_schedule_tool',
             'middlewares' => 'cors, multiTenancy',
             'multiTenancy.handler' => function ($operation, $tableName) {
-                return ['UserId' => $_SESSION['user']];
+                return ['UserId' => $_SESSION['user']['id']];
             },
         ]);
         $api = new Api($config);

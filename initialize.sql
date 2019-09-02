@@ -16,22 +16,6 @@ USE `rp_schedule_tool`;
 /*******************************************************************************
 Create Tables
  ********************************************************************************/
-CREATE TABLE `settings`
-(
-	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`UserId` INTEGER NOT NULL,
-	`timezone` VARCHAR(255) NOT NULL,
-	CONSTRAINT `PK_User` PRIMARY KEY  (`id`)
-);
-
-CREATE TABLE `servers`
-(
-	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`UserId` INTEGER NOT NULL,
-	`ServerId` INTEGER NOT NULL,
-	CONSTRAINT `PK_Server` PRIMARY KEY  (`id`)
-);
-
 CREATE TABLE `events`
 (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
