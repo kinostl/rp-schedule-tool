@@ -1,7 +1,9 @@
 {
 	"require": {
 		"mevdschee/php-crud-api": "^2.4",
-		"league/oauth2-client": "^2.4"
+		"league/oauth2-client": "^2.4",
+		"firebase/php-jwt": "^5.0",
+		"slim/slim": "^4.2"
 	},
 	"scripts": {
 		"start": "php -S localhost:8080 -t public"
