@@ -1,9 +1,12 @@
 {
 	"require": {
 		"mevdschee/php-crud-api": "^2.4",
-		"wohali/oauth2-discord-new": "^1.0"
+		"league/oauth2-client": "^2.4"
 	},
 	"scripts": {
 		"start": "php -S localhost:8080 -t public"
+	},
+	"config": {
+		"process-timeout": 0
 	}
 }

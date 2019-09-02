@@ -14,10 +14,6 @@ class ComposerStaticInit8e771c6dd9436aa4a859543a55a8c737
     );
 
     public static $prefixLengthsPsr4 = array (
-        'W' => 
-        array (
-            'Wohali\\OAuth2\\Client\\' => 21,
-        ),
         'T' => 
         array (
             'Tqdev\\PhpCrudApi\\' => 17,
@@ -49,10 +45,6 @@ class ComposerStaticInit8e771c6dd9436aa4a859543a55a8c737
     );
 
     public static $prefixDirsPsr4 = array (
-        'Wohali\\OAuth2\\Client\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/wohali/oauth2-discord-new/src',
-        ),
         'Tqdev\\PhpCrudApi\\' => 
         array (
             0 => __DIR__ . '/..' . '/mevdschee/php-crud-api/src/Tqdev/PhpCrudApi',

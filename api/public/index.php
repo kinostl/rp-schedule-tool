@@ -2,6 +2,8 @@
 
 namespace Tqdev\PhpCrudApi;
 
+use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\GenericProvider;
 use Tqdev\PhpCrudApi\Api;
 use Tqdev\PhpCrudApi\Config;
 use Tqdev\PhpCrudApi\RequestFactory;
@@ -9,7 +11,6 @@ use Tqdev\PhpCrudApi\ResponseUtils;
 use Tqdev\PhpCrudApi\RequestUtils;
 use Tqdev\PhpCrudApi\Controller\JsonResponder;
 use Tqdev\PhpCrudApi\Record\ErrorCode;
-use Wohali\OAuth2\Client\Provider\Discord;
 
 require __DIR__.'/../vendor/autoload.php';
 
@@ -17,24 +18,37 @@ $request = RequestFactory::fromGlobals();
 $path = RequestUtils::getPathSegment($request, 1);
 $method = $request->getMethod();
 
+session_start();
+
 if (
     $path == 'login'
     || $path == 'logout'
     || $path == 'me'
 ) {
     if ($method == 'GET' && $path == 'logout') {
-        unset($_SESSION['user']);
+        $_SESSION = array();
+        $responder = new JsonResponder();
+        $response = $responder->success([
+            'code'=>'200',
+            'message'=>'Logout successful'
+        ]);
     } elseif ($method == 'GET' && $path == 'login') {
-        $provider = new Discord([
-            'clientId' => '',
-            'clientSecret' => '',
-            'redirectUri' => '',
-            'scope'=>['identify','guilds']
+        $_SESSION = array();
+        $provider = new GenericProvider([
+            'clientId' => '617436016143499284',
+            'clientSecret' => 'nRJYD36e6z87tZ9eMCeYVB3fHQpzDnzi',
+            'redirectUri' => 'http://localhost:8080/login',
+            'urlAuthorize'            => 'https://discordapp.com/api/oauth2/authorize',
+            'urlAccessToken'          => 'https://discordapp.com/api/oauth2/token',
+            'urlResourceOwnerDetails' => 'https://discordapp.com/api/users/@me',
+            'scopeSeparator' => ' '
         ]);
 
         if (!isset($_GET['code'])) {
             // Step 1. Get authorization code
-            $authUrl = $provider->getAuthorizationUrl();
+            $authUrl = $provider->getAuthorizationUrl([
+                'scope' => ['identify', 'guilds']
+            ]);
             $_SESSION['oauth2state'] = $provider->getState();
             header('Location: ' . $authUrl);
             exit('Redirecting to Discord Auth Page');
@@ -49,17 +63,19 @@ if (
             ]);
             // Step 3. Set the session user to the user's profile with the provided token
             try {
-                unset($_SESSION['user']);
-                unset($_SESSION['servers']);
-                $user = $provider->getResourceOwner($token);
+                $user = $provider->getAuthenticatedRequest(
+                    'GET',
+                    'https://discordapp.com/api/users/@me',
+                    $token
+                );
                 $servers = $provider->getAuthenticatedRequest(
                     'GET',
                     'https://discordapp.com/api/users/@me/guilds',
                     $token
                 );
-                $_SESSION['user'] = $user;
-                $_SESSION['servers'] = $servers;
-                header('Location: http://localhost:3000/auth');
+                $_SESSION['user'] = $provider->getParsedResponse($user);
+                $_SESSION['servers'] = $provider->getParsedResponse($servers);
+                header('Location: http://localhost:8080/me');
                 exit('Redirecting to Webapp Home Page');
             } catch (Exception $e) {
                 exit('Failed to get user details');
