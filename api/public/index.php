@@ -17,6 +17,7 @@ require __DIR__.'/../vendor/autoload.php';
 $request = RequestFactory::fromGlobals();
 $path = RequestUtils::getPathSegment($request, 1);
 $method = $request->getMethod();
+$responder = new JsonResponder();
 
 session_start();
 
@@ -27,7 +28,6 @@ if (
 ) {
     if ($method == 'GET' && $path == 'logout') {
         $_SESSION = array();
-        $responder = new JsonResponder();
         $response = $responder->success([
             'code'=>'200',
             'message'=>'Logout successful'
@@ -83,7 +83,6 @@ if (
         }
     } elseif ($method == 'GET' && $path == 'me') {
         if (isset($_SESSION['user'])) {
-            $responder = new JsonResponder();
             $user = $_SESSION['user'];
             $servers = $_SESSION['servers'];
             $response = $responder->success([
@@ -91,11 +90,9 @@ if (
                 "servers"=>$servers
             ]);
         } else {
-            $responder = new JsonResponder();
             $response = $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
         }
     } else {
-        $responder = new JsonResponder();
         $response = $responder->error(ErrorCode::ROUTE_NOT_FOUND, '');
     }
 } else {
@@ -112,7 +109,6 @@ if (
         $api = new Api($config);
         $response = $api->handle($request);
     } else {
-        $responder = new JsonResponder();
         $response = $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
     }
 }
