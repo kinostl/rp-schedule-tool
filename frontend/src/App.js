@@ -4,6 +4,7 @@ import ConnectedServers from './ConnectedServers'
 import MyCharacters from './MyCharacters';
 import MyStoryIdeas from './MyStoryIdeas';
 import MyAvailability from './MyAvailability';
+import authorize from './state';
 
 export default class App extends React.Component {
 	constructor(){
@@ -31,7 +32,7 @@ export default class App extends React.Component {
 				displayedSection = (<ConnectedServers/>)
 				break;
 			case "MyCharacters":
-				displayedSection = (<MyCharacters/>)
+				displayedSection = (<MyCharacters user={this.props.user}/>)
 				break;
 			case "MyStoryIdeas":
 				displayedSection = (<MyStoryIdeas/>)
@@ -46,12 +47,17 @@ export default class App extends React.Component {
 		}
 
 		return (
-			<div style={{"width":"75%","marginLeft":"auto","marginRight":"auto"}}>
-				<menu style={{"display":"flex","justifyContent":"space-around","listStyle":"none"}}>
-					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyAvailability')}>My Availability</button></li>
-					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'ConnectedServers')}>Connected Servers</button></li>
-					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyCharacters')}>My Characters</button></li>
-					<li><button className="btn btn-secondary" onClick={(e)=> this.setSection(e,'MyStoryIdeas')}>My Story Ideas</button></li>
+			<div style={{ "width": "75%", "marginLeft": "auto", "marginRight": "auto" }}>
+				{
+					this.props.user ?
+						(<strong>Logout</strong>) :
+						(<a href={authorize.auth.token.getUri()}>Login</a>)
+				}
+				<menu style={{ "display": "flex", "justifyContent": "space-around", "listStyle": "none" }}>
+					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyAvailability')}>My Availability</button></li>
+					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'ConnectedServers')}>Connected Servers</button></li>
+					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyCharacters')}>My Characters</button></li>
+					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyStoryIdeas')}>My Story Ideas</button></li>
 				</menu>
 				{displayedSection}
 			</div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import Calendar from './Calendar'
+import api from './api'
 
 export default class MyAvailability extends React.Component {
 	constructor() {
@@ -7,11 +8,18 @@ export default class MyAvailability extends React.Component {
 		this.state = {
 			"selected_range": null,
 			"servers":{
-				"Server 1":true,
-				"Server 2":false,
-				"Server 3":false,
-				"Server 4":false,
-				"Server 5":false,
+				"1":true,
+				"2":false,
+				"3":false,
+				"4":false,
+				"5":false,
+			},
+			"server_names":{
+				"1":"Server 1",
+				"2":"Server 2",
+				"3":"Server 3",
+				"4":"Server 4",
+				"5":"Server 5",
 			}
 		}
 		this.calRef = React.createRef()
@@ -93,8 +101,8 @@ export default class MyAvailability extends React.Component {
 				const val = this.state.servers[key]
 				if (val && makeNewEvent[key]) {
 					let createdEvent = calApi.addEvent(newEvent)
-					createdEvent.setProp("title", key)
-					createdEvent.setExtendedProp("server", key)
+					createdEvent.setProp("title", this.state.server_names[key])
+					createdEvent.setExtendedProp("ServerId", key)
 				}
 			}
 		}
@@ -155,6 +163,11 @@ export default class MyAvailability extends React.Component {
 								let calApi = this.calRef.current.getApi()
 								let events = calApi.getEvents()
 								console.log("events",events)
+								api.post('/events', {
+									...events
+								}).then((res) => {
+									console.log(res)
+								})
 							}}>
 								Save
 							</button>

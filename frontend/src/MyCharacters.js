@@ -48,9 +48,11 @@ export default class MyCharacters extends React.Component {
 							}}
 							onSubmit={(values,{setSubmitting})=>{
 								api.post('/characters', {
-									"UserId": 1,
-									...values
+									...values,
+								},{
+									'Authorization':this.props.user
 								}).then((res) => {
+									console.log("res",res)
 									setSubmitting(false)
 								})
 							}}
@@ -67,7 +69,7 @@ export default class MyCharacters extends React.Component {
 									<label>Description (Markdown compatible)</label>
 									<Field type="textarea" name="description" className="form-control" />
 									<button type="submit" className="btn btn-primary" disabled={isSubmitting}>Add Character</button>
-									<button type="submit" className="btn btn-primary">Delete Character</button>
+									<button type="submit" className="btn btn-danger">Delete Character</button>
 								</Form>
 							)}
 						</Formik>
