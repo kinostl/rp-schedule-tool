@@ -4,7 +4,6 @@ import ConnectedServers from './ConnectedServers'
 import MyCharacters from './MyCharacters';
 import MyStoryIdeas from './MyStoryIdeas';
 import MyAvailability from './MyAvailability';
-import authorize from './state';
 
 export default class App extends React.Component {
 	constructor(){
@@ -32,7 +31,7 @@ export default class App extends React.Component {
 				displayedSection = (<ConnectedServers/>)
 				break;
 			case "MyCharacters":
-				displayedSection = (<MyCharacters user={this.props.user}/>)
+				displayedSection = (<MyCharacters user={this.props.user} token={this.props.token}/>)
 				break;
 			case "MyStoryIdeas":
 				displayedSection = (<MyStoryIdeas/>)
@@ -51,7 +50,7 @@ export default class App extends React.Component {
 				{
 					this.props.user ?
 						(<strong>Logout</strong>) :
-						(<a href={authorize.auth.token.getUri()}>Login</a>)
+						(<a href="http://localhost:8080/login">Login</a>)
 				}
 				<menu style={{ "display": "flex", "justifyContent": "space-around", "listStyle": "none" }}>
 					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyAvailability')}>My Availability</button></li>

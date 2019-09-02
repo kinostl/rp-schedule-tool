@@ -12,11 +12,15 @@ export default class MyCharacters extends React.Component {
 	}
 
 	componentDidMount(){
-		api.get('/characters')
+		api.get('/characters', {
+			headers: {
+				'X-Authorization': this.props.token
+			}
+		})
 		.then((res)=>{
 			this.setState({
 				"loading":false,
-				"characters":res.data
+				"characters":res.data['records']
 			})
 		})
 	}
@@ -31,11 +35,9 @@ export default class MyCharacters extends React.Component {
 			<div style={{"display":"flex", "justifyContent":"space-around"}}>
 				<div>
 					<ul style={{"listStyle":"none"}}>
-						<li><button class="btn btn-link"> Character 1</button></li>
-						<li><button class="btn btn-link"> Character 2</button></li>
-						<li><button class="btn btn-link"> Character 3</button></li>
-						<li><button class="btn btn-link"> Character 4</button></li>
-						<li><button class="btn btn-link"> Character 5</button></li>
+						{this.state.characters.map((character)=>(
+							<li key={character.id}><button class="btn btn-link" value={character.id}>{character.name}</button></li>
+						))}
 					</ul>
 				</div>
 
@@ -46,15 +48,18 @@ export default class MyCharacters extends React.Component {
 								'ServerId': '',
 								'description': '',
 							}}
-							onSubmit={(values,{setSubmitting})=>{
+							onSubmit={(values, { setSubmitting }) => {
+								console.log("token", this.props.token)
 								api.post('/characters', {
 									...values,
-								},{
-									'Authorization':this.props.user
-								}).then((res) => {
-									console.log("res",res)
-									setSubmitting(false)
-								})
+								}, {
+										headers: {
+											'X-Authorization': this.props.token
+										}
+									}).then((res) => {
+										console.log("res", res)
+										setSubmitting(false)
+									})
 							}}
 						>
 							{({ isSubmitting }) => (
@@ -63,8 +68,9 @@ export default class MyCharacters extends React.Component {
 									<Field className="form-control" type="text" name="name" />
 									<label>Server</label>
 									<Field component="select" name="ServerId" className="custom-select">
-										<option value={1}>Server 1</option>
-										<option value={2}>Server 2</option>
+										{this.props.user.servers.map((server)=>(
+											<option value={server.id}>{server.name}</option>
+										))}
 									</Field>
 									<label>Description (Markdown compatible)</label>
 									<Field type="textarea" name="description" className="form-control" />

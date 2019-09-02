@@ -1,17 +1,24 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import Loading from './Loading';
-import * as serviceWorker from './serviceWorker';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import './index.css'
+import App from './App'
+import Loading from './Loading'
+import * as serviceWorker from './serviceWorker'
 import 'bootstrap'
-import discordAuth from './state';
+import api from './api'
+import axios from 'axios'
 
 ReactDOM.render(<Loading />, document.getElementById('root'));
-if (window.location.href.indexOf("authorize") > -1) {
-    discordAuth.callback(window.location.href).then((user)=>{
-        console.log(user)
-        ReactDOM.render(<App user={`Bearer ${user.accessToken}`}/>, document.getElementById('root'));
+if (window.location.href.indexOf("auth") > -1) {
+    let token = "Bearer "+window.location.hash.substr(1)
+    //window.location.hash=""
+    console.log(token)
+    axios.get('http://localhost:8080/me',{
+        'headers':{
+            'X-Authorization':token
+        }
+    }).then((user)=>{
+        ReactDOM.render(<App token={token} user={user.data}/>, document.getElementById('root'));
     })
 }else{
     ReactDOM.render(<App />, document.getElementById('root'));

@@ -19,9 +19,8 @@ use Slim\Exception\HttpNotFoundException;
 require __DIR__.'/../vendor/autoload.php';
 
 $app = AppFactory::create();
-$container = $app->getContainer();
 
-$app->any('/api[/{params:.*}]', function (Request $request, Response $response, $args) use ($container) {
+$app->any('/api[/{params:.*}]', function (Request $request, Response $response, $args) {
     $publicKey = <<<EOD
 -----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8kGa1pSjbSYZVebtTRBLxBz5H
@@ -35,13 +34,15 @@ EOD;
         'username' => 'slim',
         'password' => 'password',
         'database' => 'rp_schedule_tool',
+        'basePath' => '/api',
         'middlewares' => 'jwtAuth, cors, multiTenancy',
         'jwtAuth.mode' => 'optional',
         'jwtAuth.secret' => $publicKey,
         'jwtAuth.leeway' => 1000000,
         'jwtAuth.ttl' => 1000000,
         'multiTenancy.handler' => function ($operation, $tableName) {
-            return ['UserId' => $_SESSION['claims']['UserId']];
+            $userId = $_SESSION['claims']['UserId'];
+            return ['UserId' => $userId];
         },
     ]);
     $api = new Api($config);
