@@ -13,25 +13,10 @@ use Wohali\OAuth2\Client\Provider\Discord;
 
 require __DIR__.'/../vendor/autoload.php';
 
-$provider = new Discord([
-    'clientId'=>'',
-    'clientSecret'=>'',
-    'redirectUri'=>'',
-]);
-
-$config = new Config([
-    'username' => 'slim',
-    'password' => 'password',
-    'database' => 'rp_schedule_tool',
-    'middlewares' => 'cors, multiTenancy',
-    'multiTenancy.handler' => function ($operation, $tableName) {
-        return ['UserId' => $_SESSION['user']];
-    },
-]);
 $request = RequestFactory::fromGlobals();
-$api = new Api($config);
 $path = RequestUtils::getPathSegment($request, 1);
 $method = $request->getMethod();
+
 if (
     $path == 'login'
     || $path == 'logout'
@@ -40,6 +25,12 @@ if (
     if ($method == 'GET' && $path == 'logout') {
         unset($_SESSION['user']);
     } elseif ($method == 'GET' && $path == 'login') {
+        $provider = new Discord([
+            'clientId' => '',
+            'clientSecret' => '',
+            'redirectUri' => '',
+        ]);
+
         if (!isset($_GET['code'])) {
             // Step 1. Get authorization code
             $authUrl = $provider->getAuthorizationUrl();
@@ -60,6 +51,8 @@ if (
                 unset($_SESSION['user']);
                 $user = $provider->getResourceOwner($token);
                 $_SESSION['user'] = $user;
+                header('Location: http://localhost:3000/auth');
+                exit('Redirecting to Webapp Home Page');
             } catch (Exception $e) {
                 exit('Failed to get user details');
             }
@@ -78,6 +71,16 @@ if (
     }
 } else {
     if ($method == 'GET' || isset($_SESSION['user'])) {
+        $config = new Config([
+            'username' => 'slim',
+            'password' => 'password',
+            'database' => 'rp_schedule_tool',
+            'middlewares' => 'cors, multiTenancy',
+            'multiTenancy.handler' => function ($operation, $tableName) {
+                return ['UserId' => $_SESSION['user']];
+            },
+        ]);
+        $api = new Api($config);
         $response = $api->handle($request);
     } else {
         $responder = new JsonResponder();
