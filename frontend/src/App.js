@@ -31,7 +31,7 @@ export default class App extends React.Component {
 				displayedSection = (<ConnectedServers/>)
 				break;
 			case "MyCharacters":
-				displayedSection = (<MyCharacters user={this.props.user} token={this.props.token}/>)
+				displayedSection = (<MyCharacters user={this.props.user} api={this.props.api}/>)
 				break;
 			case "MyStoryIdeas":
 				displayedSection = (<MyStoryIdeas/>)

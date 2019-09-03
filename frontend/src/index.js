@@ -8,6 +8,8 @@ import 'bootstrap'
 import api from './api'
 import axios from 'axios'
 
+
+
 ReactDOM.render(<Loading />, document.getElementById('root'));
 if (window.location.href.indexOf("auth") > -1) {
     let token = "Bearer "+window.location.hash.substr(1)
@@ -18,10 +20,21 @@ if (window.location.href.indexOf("auth") > -1) {
             'X-Authorization':token
         }
     }).then((user)=>{
-        ReactDOM.render(<App token={token} user={user.data}/>, document.getElementById('root'));
+        const api = axios.create({
+            baseURL: 'http://localhost:8080/api/records',
+            'headers': {
+                'X-Authorization': token
+            },
+            timeout: 1000,
+        });
+        ReactDOM.render(<App api={api} user={user.data}/>, document.getElementById('root'));
     })
 }else{
-    ReactDOM.render(<App />, document.getElementById('root'));
+    const api = axios.create({
+        baseURL: 'http://localhost:8080/api/records',
+        timeout: 1000,
+    });
+    ReactDOM.render(<App api={api}/>, document.getElementById('root'));
 }
 
 // If you want your app to work offline and load faster, you can change

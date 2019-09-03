@@ -1,27 +1,44 @@
 import React from 'react'
-import api from './api'
-import {Formik, Form, Field, ErrorMessage } from 'formik'
+import NewMyCharacters from './components/MyCharacters/new';
+import EditMyCharacters from './components/MyCharacters/edit';
 
 export default class MyCharacters extends React.Component {
 	constructor(){
 		super()
 		this.state={
 			"loading":true,
+			"editCharacter": null,
 			"characters":[]
 		}
 	}
 
 	componentDidMount(){
-		api.get('/characters', {
-			headers: {
-				'X-Authorization': this.props.token
-			}
-		})
+		this.props.api.get('/characters')
 		.then((res)=>{
 			this.setState({
 				"loading":false,
 				"characters":res.data['records']
 			})
+		})
+	}
+
+	handleCharacters (newCharacter) {
+		let newCharacters = this.state.characters.concat(newCharacter)
+		this.setState({
+			"characters": newCharacters
+		})
+	}
+
+	clearEditCharacter(){
+		this.setState({
+			"editCharacter":null
+		})
+	}
+
+	setEditCharacter(characterId){
+		let character = this.state.characters[characterId]
+		this.setState({
+			"editCharacter": character
 		})
 	}
 
@@ -35,50 +52,19 @@ export default class MyCharacters extends React.Component {
 			<div style={{"display":"flex", "justifyContent":"space-around"}}>
 				<div>
 					<ul style={{"listStyle":"none"}}>
-						{this.state.characters.map((character)=>(
-							<li key={character.id}><button class="btn btn-link" value={character.id}>{character.name}</button></li>
+						<li><button class="btn btn-link" onClick={()=>{this.clearEditCharacter()}}>Add New Character</button></li>
+						{this.state.characters.map((character, charId)=>(
+							<li key={character.id}><button class="btn btn-link" onClick={()=>{this.setEditCharacter(charId)}}>{character.name}</button></li>
 						))}
 					</ul>
 				</div>
 
 				<div style={{"width":"50%"}}>
-						<Formik
-							initialValues={{
-								'name': '',
-								'ServerId': '',
-								'description': '',
-							}}
-							onSubmit={(values, { setSubmitting }) => {
-								console.log("token", this.props.token)
-								api.post('/characters', {
-									...values,
-								}, {
-										headers: {
-											'X-Authorization': this.props.token
-										}
-									}).then((res) => {
-										console.log("res", res)
-										setSubmitting(false)
-									})
-							}}
-						>
-							{({ isSubmitting }) => (
-								<Form style={{ "display": "flex", "flexDirection": "column" }}>
-									<label>Name</label>
-									<Field className="form-control" type="text" name="name" />
-									<label>Server</label>
-									<Field component="select" name="ServerId" className="custom-select">
-										{this.props.user.servers.map((server)=>(
-											<option value={server.id}>{server.name}</option>
-										))}
-									</Field>
-									<label>Description (Markdown compatible)</label>
-									<Field type="textarea" name="description" className="form-control" />
-									<button type="submit" className="btn btn-primary" disabled={isSubmitting}>Add Character</button>
-									<button type="submit" className="btn btn-danger">Delete Character</button>
-								</Form>
-							)}
-						</Formik>
+					{
+						this.state.editCharacter?
+						<EditMyCharacters servers={this.props.user.servers} api={this.props.api} character={this.state.editCharacter} handleCharacters={this.handleCharacters}/>
+						:<NewMyCharacters servers={this.props.user.servers} api={this.props.api} handleCharacters={this.handleCharacters}/>
+					}
 				</div>
 			</div>
 			</div>
