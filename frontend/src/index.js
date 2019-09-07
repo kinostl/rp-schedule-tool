@@ -5,16 +5,11 @@ import App from './App'
 import Loading from './Loading'
 import * as serviceWorker from './serviceWorker'
 import 'bootstrap'
-import api from './api'
 import axios from 'axios'
 
-
-
 ReactDOM.render(<Loading />, document.getElementById('root'));
-if (window.location.href.indexOf("auth") > -1) {
-    let token = "Bearer "+window.location.hash.substr(1)
-    //window.location.hash=""
-    console.log(token)
+if(window.localStorage.getItem('token')){
+    let token = window.localStorage.getItem('token')
     axios.get('http://localhost:8080/me',{
         'headers':{
             'X-Authorization':token
@@ -29,6 +24,10 @@ if (window.location.href.indexOf("auth") > -1) {
         });
         ReactDOM.render(<App api={api} user={user.data}/>, document.getElementById('root'));
     })
+}else if (window.location.href.indexOf("auth") > -1) {
+    let token = "Bearer "+window.location.hash.substr(1)
+    window.localStorage.setItem('token',token)
+    document.location.replace('http://localhost:3000/')
 }else{
     const api = axios.create({
         baseURL: 'http://localhost:8080/api/records',

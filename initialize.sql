@@ -2,12 +2,14 @@
 Drop database if it exists
  ********************************************************************************/
 DROP DATABASE IF EXISTS `rp_schedule_tool`;
+DROP DATABASE IF EXISTS `rp_schedule_tool_auth`;
 
 
 /*******************************************************************************
 Create database
  ********************************************************************************/
 CREATE DATABASE `rp_schedule_tool`;
+CREATE DATABASE `rp_schedule_tool_auth`;
 
 
 USE `rp_schedule_tool`;
@@ -44,4 +46,16 @@ CREATE TABLE `stories`
 	`name` VARCHAR(255) NOT NULL,
 	`description` TEXT NOT NULL,
 	CONSTRAINT `PK_Story` PRIMARY KEY  (`id`)
+);
+
+USE `rp_schedule_tool_auth`;
+
+CREATE TABLE `tokens`
+(
+	`id` INTEGER NOT NULL AUTO_INCREMENT,
+	`UserId` VARCHAR(255) NOT NULL,
+	`expires_on` BIGINT NOT NULL,
+	`refresh_token` VARCHAR(255) NOT NULL,
+	`access_token` VARCHAR(255) NOT NULL,
+	CONSTRAINT `PK_Token` PRIMARY KEY  (`id`)
 );
