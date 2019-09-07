@@ -54,7 +54,7 @@ CREATE TABLE `tokens`
 (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
 	`UserId` VARCHAR(255) NOT NULL,
-	`expires_on` BIGINT NOT NULL,
+	`expires` BIGINT NOT NULL,
 	`refresh_token` VARCHAR(255) NOT NULL,
 	`access_token` VARCHAR(255) NOT NULL,
 	CONSTRAINT `PK_Token` PRIMARY KEY  (`id`)

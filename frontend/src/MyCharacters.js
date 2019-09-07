@@ -13,6 +13,10 @@ export default class MyCharacters extends React.Component {
 	}
 
 	componentDidMount(){
+		this.refreshCharacters()
+	}
+
+	refreshCharacters = () => {
 		this.props.api.get('/characters')
 		.then((res)=>{
 			this.setState({
@@ -22,20 +26,18 @@ export default class MyCharacters extends React.Component {
 		})
 	}
 
-	handleCharacters (newCharacter) {
-		let newCharacters = this.state.characters.concat(newCharacter)
-		this.setState({
-			"characters": newCharacters
-		})
+	handleDelete = () => {
+		this.refreshCharacters()
+		this.clearEditCharacter()
 	}
 
-	clearEditCharacter(){
+	clearEditCharacter = () => {
 		this.setState({
 			"editCharacter":null
 		})
 	}
 
-	setEditCharacter(characterId){
+	setEditCharacter = (characterId) => {
 		let character = this.state.characters[characterId]
 		this.setState({
 			"editCharacter": character
@@ -62,8 +64,8 @@ export default class MyCharacters extends React.Component {
 				<div style={{"width":"50%"}}>
 					{
 						this.state.editCharacter?
-						<EditMyCharacters servers={this.props.user.servers} api={this.props.api} character={this.state.editCharacter} handleCharacters={this.handleCharacters}/>
-						:<NewMyCharacters servers={this.props.user.servers} api={this.props.api} handleCharacters={this.handleCharacters}/>
+						<EditMyCharacters servers={this.props.user.servers} api={this.props.api} character={this.state.editCharacter} onEdit={this.refreshCharacters} onDelete={this.handleDelete}/>
+						:<NewMyCharacters servers={this.props.user.servers} api={this.props.api} onCreate={this.refreshCharacters}/>
 					}
 				</div>
 			</div>

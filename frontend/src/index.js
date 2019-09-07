@@ -8,13 +8,17 @@ import 'bootstrap'
 import axios from 'axios'
 
 ReactDOM.render(<Loading />, document.getElementById('root'));
-if(window.localStorage.getItem('token')){
+if (window.location.href.indexOf("auth") > -1) {
+    let token = "Bearer " + window.location.hash.substr(1)
+    window.localStorage.setItem('token', token)
+    document.location.replace('http://localhost:3000/')
+} else if (window.localStorage.getItem('token')) {
     let token = window.localStorage.getItem('token')
-    axios.get('http://localhost:8080/me',{
-        'headers':{
-            'X-Authorization':token
+    axios.get('http://localhost:8080/me', {
+        'headers': {
+            'X-Authorization': token
         }
-    }).then((user)=>{
+    }).then((user) => {
         const api = axios.create({
             baseURL: 'http://localhost:8080/api/records',
             'headers': {
@@ -22,18 +26,14 @@ if(window.localStorage.getItem('token')){
             },
             timeout: 1000,
         });
-        ReactDOM.render(<App api={api} user={user.data}/>, document.getElementById('root'));
+        ReactDOM.render(<App api={api} user={user.data} />, document.getElementById('root'));
     })
-}else if (window.location.href.indexOf("auth") > -1) {
-    let token = "Bearer "+window.location.hash.substr(1)
-    window.localStorage.setItem('token',token)
-    document.location.replace('http://localhost:3000/')
-}else{
+} else {
     const api = axios.create({
         baseURL: 'http://localhost:8080/api/records',
         timeout: 1000,
     });
-    ReactDOM.render(<App api={api}/>, document.getElementById('root'));
+    ReactDOM.render(<App api={api} />, document.getElementById('root'));
 }
 
 // If you want your app to work offline and load faster, you can change

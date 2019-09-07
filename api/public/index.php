@@ -105,8 +105,10 @@ $app->any('/api[/{params:.*}]', function (Request $request, Response $response, 
         'jwtAuth.leeway' => 0,
         'jwtAuth.ttl' => 604800,
         'multiTenancy.handler' => function ($operation, $tableName) {
-            $userId = $_SESSION['claims']['UserId'];
-            return ['UserId' => $userId];
+            if ($operation != 'read') {
+                $userId = $_SESSION['claims']['UserId'];
+                return ['UserId' => $userId];
+            }
         },
     ]);
     $api = new Api($config);
@@ -126,6 +128,50 @@ $app->add(function ($request, $handler) {
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
+$app->get('/refresh', function (Request $request, Response $response, $args) {
+    $responder = new JsonResponder();
+    if (!$request->hasHeader('X-Authorization')) {
+        return $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
+    }
+    $tokens = $this->get('auth_db')->table('tokens');
+    $provider = $this->get('provider');
+    $code = $request->getHeaderLine('X-Authorization');
+    $code = substr($code, 7);
+    $jwt = JWT::decode($code, $this->get('publicKey'), ['RS256']);
+    $jwt = (array) $jwt;
+    $UserId = $jwt['UserId'];
+    $token = $tokens->where('UserId', $UserId)->first();
+    if (time() >= $token->expires) {
+        $new_token = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => $token->refresh_token
+        ]);
+
+        $tokens->updateOrInsert(
+            ['UserId' => $UserId],
+            [
+                'expires' => time() + $new_token->getExpires(),
+                'refresh_token' => $new_token->getRefreshToken(),
+                'access_token' => $new_token
+            ]
+        );
+        $token = $tokens->where('UserId', $UserId)->first();
+    }
+    $jwt_token = [
+        "iss" => "localhost",
+        "aud" => "localhost",
+        "iat" => time(),
+        'UserId' => $UserId
+    ];
+
+    $jwt = JWT::encode(
+        $jwt_token,
+        $this->get('privateKey'),
+        'RS256'
+    );
+    $response->getBody()->write($jwt);
+    return $response;
+});
+
 $app->get('/login', function (Request $request, Response $response, $args) {
     session_start();
     $params = $request->getQueryParams();
@@ -133,83 +179,57 @@ $app->get('/login', function (Request $request, Response $response, $args) {
 
     $tokens = $this->get('auth_db')->table('tokens');
 
-    if ($request->hasHeader('X-Authorization')) {
-        $provider = $this->get('provider');
-        $code = $request->getHeaderLine('X-Authorization');
-        $code = substr($code, 7);
-        $jwt = JWT::decode($code, $this->get('publicKey'), ['RS256']);
-        $jwt = (array) $jwt;
-        $UserId = $jwt['UserId'];
-        $token = $tokens->where('UserId',$UserId)->first();
-        if (time() >= $token->expires_on) {
-            $new_token = $provider->getAccessToken('refresh_token', [
-                'refresh_token' => $token->refresh_token
-            ]);
+    if (!isset($params['code'])) {
+        // Step 1. Get authorization code
+        $authUrl = $provider->getAuthorizationUrl([
+            'scope' => ['identify', 'guilds']
+        ]);
+        $_SESSION['oauth2state'] = $provider->getState();
+        header('Location: ' . $authUrl);
+        exit('Redirecting to Discord Auth Page');
+        // Check given state against previously stored one to mitigate CSRF attack
+    } elseif (empty($params['state']) || ($params['state'] !== $_SESSION['oauth2state'])) {
+        unset($_SESSION['oauth2state']);
+        exit('Invalid state');
+    } else {
+        // Step 2. Get an access token using the provided authorization code
+        $token = $provider->getAccessToken('authorization_code', [
+            'code' => $params['code']
+        ]);
+        // Step 3. Set the session user to the user's profile with the provided token
+        try {
+            $user = $provider->getAuthenticatedRequest(
+                'GET',
+                'https://discordapp.com/api/users/@me',
+                $token
+            );
+            $user = $provider->getParsedResponse($user);
 
             $tokens->updateOrInsert(
-                ['UserId' => $UserId],
+                ['UserId' => $user['id']],
                 [
-                    'expires_on' => time() + $new_token->getExpires(),
-                    'refresh_token' => $new_token->getRefreshToken(),
-                    'access_token' => $new_token
+                    'expires' => $token->getExpires(),
+                    'refresh_token' => $token->getRefreshToken(),
+                    'access_token' => $token
                 ]
             );
-        }
-    } else {
-        if (!isset($params['code'])) {
-            // Step 1. Get authorization code
-            $authUrl = $provider->getAuthorizationUrl([
-                'scope' => ['identify', 'guilds']
-            ]);
-            $_SESSION['oauth2state'] = $provider->getState();
-            header('Location: ' . $authUrl);
-            exit('Redirecting to Discord Auth Page');
-            // Check given state against previously stored one to mitigate CSRF attack
-        } elseif (empty($params['state']) || ($params['state'] !== $_SESSION['oauth2state'])) {
-            unset($_SESSION['oauth2state']);
-            exit('Invalid state');
-        } else {
-            // Step 2. Get an access token using the provided authorization code
-            $token = $provider->getAccessToken('authorization_code', [
-                'code' => $params['code']
-            ]);
-            $expires_on = time() + $token->getExpires();
-            // Step 3. Set the session user to the user's profile with the provided token
-            try {
-                $user = $provider->getAuthenticatedRequest(
-                    'GET',
-                    'https://discordapp.com/api/users/@me',
-                    $token
-                );
-                $user = $provider->getParsedResponse($user);
 
-                $tokens->updateOrInsert(
-                    ['UserId' => $user['id']],
-                    [
-                        'expires_on' => $expires_on,
-                        'refresh_token' => $token->getRefreshToken(),
-                        'access_token' => $token
-                    ]
-                );
+            $jwt_token = [
+                "iss" => "localhost",
+                "aud" => "localhost",
+                "iat" => time(),
+                'UserId' => $user['id']
+            ];
 
-                $jwt_token = [
-                    "iss" => "localhost",
-                    "aud" => "localhost",
-                    "iat" => time(),
-                    'expires_on' => $expires_on,
-                    'UserId' => $user['id']
-                ];
-
-                $jwt = JWT::encode(
-                    $jwt_token,
-                    $this->get('privateKey'),
-                    'RS256'
-                );
-                header('Location: http://localhost:3000/auth#' . $jwt);
-                exit('Redirecting to Webapp Home Page');
-            } catch (Exception $e) {
-                exit('Failed to get user details'.$e->getMessage());
-            }
+            $jwt = JWT::encode(
+                $jwt_token,
+                $this->get('privateKey'),
+                'RS256'
+            );
+            header('Location: http://localhost:3000/auth#' . $jwt);
+            exit('Redirecting to Webapp Home Page');
+        } catch (Exception $e) {
+            exit('Failed to get user details' . $e->getMessage());
         }
     }
 });
@@ -228,7 +248,7 @@ $app->get('/me', function (Request $request, Response $response, $args) {
         $jwt = (array) $jwt;
         $UserId = $jwt['UserId'];
         $tokens = $this->get('auth_db')->table('tokens');
-        $token = $tokens->where('UserId',$UserId)->value('access_token');
+        $token = $tokens->where('UserId', $UserId)->value('access_token');
 
         $user = $provider->getAuthenticatedRequest(
             'GET',

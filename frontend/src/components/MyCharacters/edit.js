@@ -3,8 +3,8 @@ import { Formik, Form, Field, ErrorMessage } from 'formik'
 
 export default class EditMyCharacters extends React.Component {
 	onDelete(value){
-		this.props.api.delete('/characters').then((res) => {
-			this.props.handleCharacters(res)
+		this.props.api.delete(`/characters/${value}`).then((res) => {
+			this.props.onDelete()
 		})
 	}
 
@@ -18,9 +18,8 @@ export default class EditMyCharacters extends React.Component {
 					'description': this.props.character.description,
 				}}
 				onSubmit={(values, { setSubmitting }) => {
-					this.props.api.post('/characters', {
-						...values,
-					}).then((res) => {
+					this.props.api.put(`/characters/${this.props.character.id}`, values).then((res) => {
+						this.props.onEdit()
 						setSubmitting(false)
 					})
 				}}

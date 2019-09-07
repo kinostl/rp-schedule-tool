@@ -14,7 +14,7 @@ export default class NewMyCharacters extends React.Component {
 					this.props.api.post('/characters', {
 						...values,
 					}).then((res) => {
-						this.props.handleCharacters(res)
+						this.props.onCreate()
 						setSubmitting(false)
 					})
 				}}
