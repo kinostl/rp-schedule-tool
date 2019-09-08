@@ -28,7 +28,7 @@ export default class App extends React.Component {
 				displayedSection = (<MyAvailability api={this.props.api} />)
 				break;
 			case "ConnectedServers":
-				displayedSection = (<ConnectedServers />)
+				displayedSection = (<ConnectedServers api={this.props.api} />)
 				break;
 			case "MyCharacters":
 				displayedSection = (<MyCharacters api={this.props.api} />)

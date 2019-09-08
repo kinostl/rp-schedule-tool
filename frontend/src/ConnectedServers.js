@@ -6,14 +6,22 @@ export default class ConnectedServers extends React.Component {
 	constructor() {
 		super()
 		this.state = {
-			"servers": {
-				"Server 1": true,
-				"Server 2": false,
-				"Server 3": false,
-				"Server 4": false,
-				"Server 5": false,
-			},
+			"servers": {},
+			"server_names":{},
 			"selected_player": null,
+			"loading":true,
+			"events": [
+				{
+					title: 'Janice - Mjorln eats', date: '2019-08-22', extendedProps: {
+						"player": "Janice"
+					}
+				},
+				{
+					title: 'Craig - Jinks buys a car', date: '2019-08-24', extendedProps: {
+						"player": "Craig"
+					}
+				}
+			],
 			"players": {
 				"Janice": [
 					"Xargothrax",
@@ -27,11 +35,31 @@ export default class ConnectedServers extends React.Component {
 		}
 	}
 
+	componentDidMount(){
+		this.props.api.get('/servers').then((res)=>{
+			let serverRes = res.data['records']
+			let servers={}
+			let server_names={}
+			for(let server of serverRes){
+				servers[server['id']]=false
+				server_names[server['id']]=server['name']
+			}
+			this.setState({
+				"loading":false,
+				"servers":servers,
+				"server_names":server_names
+			})
+
+		})
+	}
+
 	render() {
 		let checkBoxes = []
 		let characters = []
 		for (const key in this.state.servers) {
 			const val = this.state.servers[key]
+			const name = this.state.server_names[key]
+
 			checkBoxes.push(<li key={key}>
 				<input checked={val} onChange={(e) => {
 					this.setState({
@@ -39,8 +67,28 @@ export default class ConnectedServers extends React.Component {
 							...this.state.servers,
 							[key]: e.target.checked
 						}
+					},()=>{
+							let filterId = 1
+							let params = {}
+							for (let [key, value] of Object.entries(this.state.servers)) {
+								if (value) {
+									params[`filter${filterId}`] = `ServerId,eq,${key}`
+									filterId = filterId + 1
+								}
+							}
+							this.props.api.get('/events', { params: params }).then((res) => {
+								let events = res.data['records']
+								events = events.map((event)=>({
+									start:event.start*1000,
+									end:event.end*1000,
+									title:`${event.ServerId} hosted by ${event.UserId}`
+								}))
+								this.setState({
+									"events":events
+								})
+							})
 					})
-				}} type="checkbox" /> {key}
+				}} type="checkbox" /> {name}
 			</li>)
 		}
 
@@ -67,14 +115,7 @@ export default class ConnectedServers extends React.Component {
 							eventClick={(e)=>{
 								this.setState({"selected_player":e.event.extendedProps.player})
 							}}
-							events={[
-								{ title: 'Janice - Mjorln eats', date: '2019-08-22' , extendedProps:{
-									"player":"Janice"
-								}},
-								{ title: 'Craig - Jinks buys a car', date: '2019-08-24' , extendedProps : {
-									"player":"Craig"
-								}}
-							]}
+							events={this.state.events}
 						/>
 					</div>
 					<div>
