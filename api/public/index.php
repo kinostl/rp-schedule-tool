@@ -55,6 +55,25 @@ $container->set('auth_db', function () {
     return $capsule;
 });
 
+$container->set('scheduler_db', function () {
+    $capsule = new \Illuminate\Database\Capsule\Manager;
+    $capsule->addConnection([
+        'driver' => 'mysql',
+        'host' => 'localhost',
+        'database' => 'rp_schedule_tool',
+        'username' => 'slim',
+        'password' => 'password',
+        'charset'   => 'utf8',
+        'collation' => 'utf8_unicode_ci',
+        'prefix'    => '',
+    ]);
+
+    $capsule->setAsGlobal();
+    $capsule->bootEloquent();
+
+    return $capsule;
+});
+
 $container->set('publicKey', function () {
     $publicKey = <<<EOD
 -----BEGIN PUBLIC KEY-----
@@ -172,13 +191,57 @@ $app->get('/api/records/servers', function (Request $request, Response $response
         $servers_cache_table->updateOrInsert(
             ['UserId' => $UserId],
             [
-                'expires' => time() + 60,
+                'expires' => time() + 300,
                 'Servers' => json_encode($servers)
             ]
         );
         return $responder->success([
             "records" => $servers
         ]);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode([
+            "code" => $e->getCode(),
+            "message" => $e->getMessage()
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
+    }
+});
+
+$app->map(['POST', 'PUT', 'PATCH'], '/api/records/events', function (Request $request, Response $response, $args) {
+    $responder = new JsonResponder();
+    if (!$request->hasHeader('X-Authorization')) {
+        return $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
+    }
+
+    try {
+        $params = json_decode($request->getBody()->getContents());
+        //This should get able to be getParsedBody() but whatever
+        $publicKey = $this->get('publicKey');
+        $code = $request->getHeaderLine('X-Authorization');
+        $code = substr($code, 7);
+        $jwt = JWT::decode($code, $publicKey, ['RS256']);
+        $jwt = (array) $jwt;
+        $UserId = $jwt['UserId'];
+        $earliestStart = min(array_column($params,"start"));
+        $latestEnd = max(array_column($params,"end"));
+        $events = $this->get('scheduler_db')->table('events')->where([
+            ['UserId', $UserId],
+            ['start','>=',$earliestStart],
+            ['end','<=',$latestEnd]
+        ]);
+        $events->delete();
+        $events = $this->get('scheduler_db')->table('events');
+        $idArray = [];
+        foreach($params as $param){
+            $param = (array)$param;
+            $param['UserId'] = $UserId;
+            $id = $events->insertGetId(
+                $param
+            );
+            array_push($idArray,$id);
+        }
+        return $responder->success($idArray);
     } catch (Exception $e) {
         $response->getBody()->write(json_encode([
             "code" => $e->getCode(),

@@ -27,6 +27,21 @@ export default class MyAvailability extends React.Component {
 				"servers":servers,
 				"server_names":server_names
 			})
+
+			return this.props.api.get('/events')
+		}).then((res)=>{
+			let calApi = this.calRef.current.getApi()
+			let events = res.data['records']
+			for(const event of events){
+				calApi.addEvent({
+					start: event.start*1000,
+					end: event.end*1000,
+					title: this.state.server_names[event.ServerId],
+					extendedProps: {
+						"ServerId": event.ServerId
+					}
+				})
+			}
 		})
 	}
 
