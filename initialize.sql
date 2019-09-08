@@ -59,3 +59,12 @@ CREATE TABLE `tokens`
 	`access_token` VARCHAR(255) NOT NULL,
 	CONSTRAINT `PK_Token` PRIMARY KEY  (`id`)
 );
+
+CREATE TABLE `servers`
+(
+	`id` INTEGER NOT NULL AUTO_INCREMENT,
+	`UserId` VARCHAR(255) NOT NULL,
+	`Servers` TEXT NOT NULL,
+	`expires` BIGINT NOT NULL,
+	CONSTRAINT `PK_Server` PRIMARY KEY  (`id`)
+);

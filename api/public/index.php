@@ -93,13 +93,109 @@ EOD;
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
-$app->any('/api[/{params:.*}]', function (Request $request, Response $response, $args) {
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response;
+});
+
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+});
+
+$app->get('/api/records/me', function (Request $request, Response $response, $args) {
+    $responder = new JsonResponder();
+    if (!$request->hasHeader('X-Authorization')) {
+        return $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
+    }
+
+    try {
+        $provider = $this->get('provider');
+        $publicKey = $this->get('publicKey');
+        $code = $request->getHeaderLine('X-Authorization');
+        $code = substr($code, 7);
+        $jwt = JWT::decode($code, $publicKey, ['RS256']);
+        $jwt = (array) $jwt;
+        $UserId = $jwt['UserId'];
+        $tokens = $this->get('auth_db')->table('tokens');
+        $token = $tokens->where('UserId', $UserId)->value('access_token');
+
+        $user = $provider->getAuthenticatedRequest(
+            'GET',
+            'https://discordapp.com/api/users/@me',
+            $token
+        );
+        $user = $provider->getParsedResponse($user);
+        return $responder->success($user);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode([
+            "code" => $e->getCode(),
+            "message" => $e->getMessage()
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
+    }
+});
+
+$app->get('/api/records/servers', function (Request $request, Response $response, $args) {
+    $responder = new JsonResponder();
+    if (!$request->hasHeader('X-Authorization')) {
+        return $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
+    }
+    $provider = $this->get('provider');
+    $publicKey = $this->get('publicKey');
+    $code = $request->getHeaderLine('X-Authorization');
+    $code = substr($code, 7);
+    $jwt = JWT::decode($code, $publicKey, ['RS256']);
+    $jwt = (array) $jwt;
+    $UserId = $jwt['UserId'];
+
+    $servers_cache_table = $this->get('auth_db')->table('servers');
+    $servers_cache = $servers_cache_table->where('UserId', $UserId)->first();
+    if (time() <= $servers_cache->expires) {
+        return $responder->success([
+            "records"=>json_decode($servers_cache->Servers)
+        ]);
+    }
+    try {
+        $tokens = $this->get('auth_db')->table('tokens');
+        $token = $tokens->where('UserId', $UserId)->value('access_token');
+
+        $servers = $provider->getAuthenticatedRequest(
+            'GET',
+            'https://discordapp.com/api/users/@me/guilds',
+            $token
+        );
+        $servers = $provider->getParsedResponse($servers);
+        $servers_cache_table->updateOrInsert(
+            ['UserId' => $UserId],
+            [
+                'expires' => time() + 60,
+                'Servers' => json_encode($servers)
+            ]
+        );
+        return $responder->success([
+            "records" => $servers
+        ]);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode([
+            "code" => $e->getCode(),
+            "message" => $e->getMessage()
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
+    }
+});
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', function (Request $request, Response $response, $args) {
     $config = new Config([
         'username' => 'slim',
         'password' => 'password',
         'database' => 'rp_schedule_tool',
         'basePath' => '/api',
-        'middlewares' => 'jwtAuth, cors, multiTenancy',
+        'middlewares' => 'jwtAuth, multiTenancy',
         'jwtAuth.mode' => 'optional',
         'jwtAuth.secret' => $this->get('publicKey'),
         'jwtAuth.leeway' => 0,
@@ -114,18 +210,6 @@ $app->any('/api[/{params:.*}]', function (Request $request, Response $response, 
     $api = new Api($config);
     $response = $api->handle($request);
     return $response;
-});
-
-$app->options('/{routes:.+}', function ($request, $response, $args) {
-    return $response;
-});
-
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
 $app->get('/refresh', function (Request $request, Response $response, $args) {
@@ -178,6 +262,12 @@ $app->get('/login', function (Request $request, Response $response, $args) {
     $provider = $this->get('provider');
 
     $tokens = $this->get('auth_db')->table('tokens');
+    $servers_cache_table = $this->get('auth_db')->table('servers');
+
+    if(isset($params['error']) && $params['error'] == 'access_denied'){
+            header('Location: http://localhost:3000/');
+            exit($params['error_description']);
+    }
 
     if (!isset($params['code'])) {
         // Step 1. Get authorization code
@@ -204,6 +294,12 @@ $app->get('/login', function (Request $request, Response $response, $args) {
                 $token
             );
             $user = $provider->getParsedResponse($user);
+            $servers = $provider->getAuthenticatedRequest(
+                'GET',
+                'https://discordapp.com/api/users/@me/guilds',
+                $token
+            );
+            $servers = $provider->getParsedResponse($servers);
 
             $tokens->updateOrInsert(
                 ['UserId' => $user['id']],
@@ -211,6 +307,14 @@ $app->get('/login', function (Request $request, Response $response, $args) {
                     'expires' => $token->getExpires(),
                     'refresh_token' => $token->getRefreshToken(),
                     'access_token' => $token
+                ]
+            );
+
+            $servers_cache_table->updateOrInsert(
+                ['UserId' => $user['id']],
+                [
+                    'expires' => time() + 60,
+                    'Servers' => json_encode($servers)
                 ]
             );
 
@@ -234,50 +338,11 @@ $app->get('/login', function (Request $request, Response $response, $args) {
     }
 });
 
-$app->get('/me', function (Request $request, Response $response, $args) {
-    $responder = new JsonResponder();
-    if (!$request->hasHeader('X-Authorization')) {
-        return $responder->error(ErrorCode::AUTHENTICATION_REQUIRED, '');
-    }
-    try {
-        $provider = $this->get('provider');
-        $publicKey = $this->get('publicKey');
-        $code = $request->getHeaderLine('X-Authorization');
-        $code = substr($code, 7);
-        $jwt = JWT::decode($code, $publicKey, ['RS256']);
-        $jwt = (array) $jwt;
-        $UserId = $jwt['UserId'];
-        $tokens = $this->get('auth_db')->table('tokens');
-        $token = $tokens->where('UserId', $UserId)->value('access_token');
 
-        $user = $provider->getAuthenticatedRequest(
-            'GET',
-            'https://discordapp.com/api/users/@me',
-            $token
-        );
-        $servers = $provider->getAuthenticatedRequest(
-            'GET',
-            'https://discordapp.com/api/users/@me/guilds',
-            $token
-        );
-        $user = $provider->getParsedResponse($user);
-        $servers = $provider->getParsedResponse($servers);
-        return $responder->success([
-            "user" => $user,
-            "servers" => $servers
-        ]);
-    } catch (Exception $e) {
-        $response->getBody()->write(json_encode([
-            "code" => $e->getCode(),
-            "message" => $e->getMessage()
-        ]));
-        return $response->withHeader('Content-Type', 'application/json')
-            ->withStatus(500);
-    }
-});
 
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($request, $response) {
-    throw new HttpNotFoundException($request);
+    $responder = new JsonResponder();
+    return $responder->error(ErrorCode::ROUTE_NOT_FOUND, '');
 });
 
 $app->run();

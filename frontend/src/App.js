@@ -31,10 +31,10 @@ export default class App extends React.Component {
 				displayedSection = (<ConnectedServers />)
 				break;
 			case "MyCharacters":
-				displayedSection = (<MyCharacters user={this.props.user} api={this.props.api} />)
+				displayedSection = (<MyCharacters api={this.props.api} />)
 				break;
 			case "MyStoryIdeas":
-				displayedSection = (<MyStoryIdeas />)
+				displayedSection = (<MyStoryIdeas api={this.props.api} />)
 				break;
 			default:
 				displayedSection = (<div>Hi, tester! Go ahead and click around.

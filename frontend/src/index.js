@@ -14,7 +14,7 @@ if (window.location.href.indexOf("auth") > -1) {
     document.location.replace('http://localhost:3000/')
 } else if (window.localStorage.getItem('token')) {
     let token = window.localStorage.getItem('token')
-    axios.get('http://localhost:8080/me', {
+    axios.get('http://localhost:8080/api/records/me', {
         'headers': {
             'X-Authorization': token
         }
