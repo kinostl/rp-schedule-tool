@@ -25,7 +25,7 @@ export default class App extends React.Component {
 		let displayedSection
 		switch (this.state.section) {
 			case "MyAvailability":
-				displayedSection = (<MyAvailability />)
+				displayedSection = (<MyAvailability api={this.props.api} />)
 				break;
 			case "ConnectedServers":
 				displayedSection = (<ConnectedServers />)

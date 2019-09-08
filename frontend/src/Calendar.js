@@ -5,7 +5,6 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'; // for selectable
 import bootstrapPlugin from '@fullcalendar/bootstrap';
-import luxonPlugin from '@fullcalendar/luxon';
 
 import './main.scss' // webpack must be configured to do this
 
@@ -28,7 +27,6 @@ const Calendar = React.forwardRef((props, ref) => (
                 bootstrapPlugin,
                 listPlugin,
                 interactionPlugin,
-                luxonPlugin,
             ]} />))
 
 export default Calendar

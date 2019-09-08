@@ -205,6 +205,7 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', funct
                 $userId = $_SESSION['claims']['UserId'];
                 return ['UserId' => $userId];
             }
+            return [];
         },
     ]);
     $api = new Api($config);

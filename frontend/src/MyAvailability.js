@@ -1,28 +1,33 @@
 import React from 'react'
 import Calendar from './Calendar'
-import api from './api'
 
 export default class MyAvailability extends React.Component {
 	constructor() {
 		super()
 		this.state = {
+			"loading":true,
 			"selected_range": null,
-			"servers":{
-				"1":true,
-				"2":false,
-				"3":false,
-				"4":false,
-				"5":false,
-			},
-			"server_names":{
-				"1":"Server 1",
-				"2":"Server 2",
-				"3":"Server 3",
-				"4":"Server 4",
-				"5":"Server 5",
-			}
+			"servers":{},
+			"server_names":{}
 		}
 		this.calRef = React.createRef()
+	}
+
+	componentDidMount(){
+		this.props.api.get('/servers').then((res)=>{
+			let serverRes = res.data['records']
+			let servers={}
+			let server_names={}
+			for(let server of serverRes){
+				servers[server['id']]=false
+				server_names[server['id']]=server['name']
+			}
+			this.setState({
+				"loading":false,
+				"servers":servers,
+				"server_names":server_names
+			})
+		})
 	}
 
 	getConflicts = (newEvent, event) => {
@@ -80,14 +85,14 @@ export default class MyAvailability extends React.Component {
 			if (event.allDay === false) {
 				let [startsInEvent, endsInEvent, eventInNewEvent] = this.getConflicts(newEvent, event)
 				if (newEvent.extendedProps) {
-					if(newEvent.extendedProps.server === event.extendedProps.server){
+					if(newEvent.extendedProps.ServerId === event.extendedProps.ServerId){
 						this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent, remove)
 					}
 				}else{
 					for (const key in this.state.servers) {
 						const val = this.state.servers[key]
 						if (val) {
-							if(event.extendedProps.server === key){
+							if(event.extendedProps.ServerId === key){
 								makeNewEvent[key] = this.handleConflict(event, newEvent, eventInNewEvent, startsInEvent, endsInEvent, remove)
 							}
 						}
@@ -130,9 +135,14 @@ export default class MyAvailability extends React.Component {
 	}
 
 	render() {
+		if(this.state.loading){
+			return <div>Loading</div>
+		}
+
 		let checkBoxes = []
 		for(const key in this.state.servers){
 			const val = this.state.servers[key]
+			const name = this.state.server_names[key]
 			checkBoxes.push(<li key={key}>
 				<input checked={val} onChange={(e) => {
 					this.setState({
@@ -141,7 +151,7 @@ export default class MyAvailability extends React.Component {
 							[key]: e.target.checked
 						}
 					})
-				}} type="checkbox" /> {key}
+				}} type="checkbox" /> {name}
 			</li>)
 		}
 		return (
@@ -162,10 +172,13 @@ export default class MyAvailability extends React.Component {
 							<button className="btn btn-primary" onClick={() => {
 								let calApi = this.calRef.current.getApi()
 								let events = calApi.getEvents()
-								console.log("events",events)
-								api.post('/events', {
-									...events
-								}).then((res) => {
+								let getUnix = (timestamp)=>Math.round(timestamp.getTime() / 1000)
+								events = events.map((event) => ({
+									"start": getUnix(event.start),
+									"end": getUnix(event.end),
+									"ServerId":event.extendedProps.ServerId
+								}))
+								this.props.api.post('/events', events).then((res) => {
 									console.log(res)
 								})
 							}}>
@@ -185,10 +198,7 @@ export default class MyAvailability extends React.Component {
 							}}
 							eventResize={this.handleResize}
 							eventDrop={this.handleDrop}
-							events={[
-								{ date: '2019-08-23' },
-								{ date: '2019-08-25' }
-							]} />
+						/>
 					</div>
 				</div>
 			</div>
