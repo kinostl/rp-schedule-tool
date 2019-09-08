@@ -15,8 +15,6 @@ use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-use Slim\Exception\HttpNotFoundException;
-
 use DI\Container;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -175,7 +173,7 @@ $app->get('/api/records/servers', function (Request $request, Response $response
     $servers_cache = $servers_cache_table->where('UserId', $UserId)->first();
     if (time() <= $servers_cache->expires) {
         return $responder->success([
-            "records"=>json_decode($servers_cache->Servers)
+            "records" => json_decode($servers_cache->Servers)
         ]);
     }
     try {
@@ -223,23 +221,23 @@ $app->map(['POST', 'PUT', 'PATCH'], '/api/records/events', function (Request $re
         $jwt = JWT::decode($code, $publicKey, ['RS256']);
         $jwt = (array) $jwt;
         $UserId = $jwt['UserId'];
-        $earliestStart = min(array_column($params,"start"));
-        $latestEnd = max(array_column($params,"end"));
+        $earliestStart = min(array_column($params, "start"));
+        $latestEnd = max(array_column($params, "end"));
         $events = $this->get('scheduler_db')->table('events')->where([
             ['UserId', $UserId],
-            ['start','>=',$earliestStart],
-            ['end','<=',$latestEnd]
+            ['start', '>=', $earliestStart],
+            ['end', '<=', $latestEnd]
         ]);
         $events->delete();
         $events = $this->get('scheduler_db')->table('events');
         $idArray = [];
-        foreach($params as $param){
-            $param = (array)$param;
+        foreach ($params as $param) {
+            $param = (array) $param;
             $param['UserId'] = $UserId;
             $id = $events->insertGetId(
                 $param
             );
-            array_push($idArray,$id);
+            array_push($idArray, $id);
         }
         return $responder->success($idArray);
     } catch (Exception $e) {
@@ -258,18 +256,27 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', funct
         'password' => 'password',
         'database' => 'rp_schedule_tool',
         'basePath' => '/api',
-        'middlewares' => 'jwtAuth, multiTenancy',
-        'jwtAuth.mode' => 'optional',
+        'middlewares' => 'jwtAuth, multiTenancy, customization',
+        'jwtAuth.mode' => 'required',
         'jwtAuth.secret' => $this->get('publicKey'),
         'jwtAuth.leeway' => 0,
         'jwtAuth.ttl' => 604800,
         'multiTenancy.handler' => function ($operation, $tableName) {
-            if ($operation != 'read') {
+            if ($operation != "read" && $operation != "list") {
                 $userId = $_SESSION['claims']['UserId'];
                 return ['UserId' => $userId];
             }
             return [];
         },
+        'customization.beforeHandler' => function ($operation, $tableName, $request, $environment) {
+            $paramString = $request->getUri()->getQuery();
+            $paramString = str_replace("%40me", $_SESSION['claims']['UserId'],$paramString);
+            if (empty($paramString) && $operation == "list") {
+                $paramString= "filter=UserId,eq," . $_SESSION['claims']['UserId'];
+            }
+            $request = $request->withUri($request->getUri()->withQuery($paramString));
+            return $request;
+        }
     ]);
     $api = new Api($config);
     $response = $api->handle($request);
@@ -328,9 +335,9 @@ $app->get('/login', function (Request $request, Response $response, $args) {
     $tokens = $this->get('auth_db')->table('tokens');
     $servers_cache_table = $this->get('auth_db')->table('servers');
 
-    if(isset($params['error']) && $params['error'] == 'access_denied'){
-            header('Location: http://localhost:3000/');
-            exit($params['error_description']);
+    if (isset($params['error']) && $params['error'] == 'access_denied') {
+        header('Location: http://localhost:3000/');
+        exit($params['error_description']);
     }
 
     if (!isset($params['code'])) {
