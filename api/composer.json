@@ -5,7 +5,8 @@
 		"firebase/php-jwt": "^5.0",
 		"slim/slim": "^4.2",
 		"illuminate/database": "^6.0",
-		"php-di/php-di": "^6.0"
+		"php-di/php-di": "^6.0",
+		"vlucas/phpdotenv": "^3.5"
 	},
 	"scripts": {
 		"start": "php -S localhost:8080 -t public"

@@ -1,7 +1,5 @@
 <?php
-
 declare(strict_types=1);
-
 use League\OAuth2\Client\Provider\GenericProvider;
 use \Firebase\JWT\JWT;
 
@@ -16,16 +14,20 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 use DI\Container;
+use Dotenv\Dotenv;
 
 require __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv::create(__DIR__."/..");
+$dotenv->load();
 
 $container = new Container();
 
 $container->set('provider', function () {
     $provider = new GenericProvider([
-        'clientId' => '617436016143499284',
-        'clientSecret' => 'nRJYD36e6z87tZ9eMCeYVB3fHQpzDnzi',
-        'redirectUri' => 'http://localhost:8080/login',
+        'clientId' => $_ENV['discord_id'],
+        'clientSecret' => $_ENV['discord_secret'],
+        'redirectUri' => $_ENV['my_uri']."/login",
         'urlAuthorize'            => 'https://discordapp.com/api/oauth2/authorize',
         'urlAccessToken'          => 'https://discordapp.com/api/oauth2/token',
         'urlResourceOwnerDetails' => 'https://discordapp.com/api/users/@me',
@@ -40,8 +42,8 @@ $container->set('auth_db', function () {
         'driver' => 'mysql',
         'host' => 'localhost',
         'database' => 'rp_schedule_tool_auth',
-        'username' => 'slim',
-        'password' => 'password',
+        'username' => $_ENV['db_user'],
+        'password' => $_ENV['db_pass'],
         'charset'   => 'utf8',
         'collation' => 'utf8_unicode_ci',
         'prefix'    => '',
@@ -59,8 +61,8 @@ $container->set('scheduler_db', function () {
         'driver' => 'mysql',
         'host' => 'localhost',
         'database' => 'rp_schedule_tool',
-        'username' => 'slim',
-        'password' => 'password',
+        'username' => $_ENV['db_user'],
+        'password' => $_ENV['db_pass'],
         'charset'   => 'utf8',
         'collation' => 'utf8_unicode_ci',
         'prefix'    => '',
@@ -73,38 +75,12 @@ $container->set('scheduler_db', function () {
 });
 
 $container->set('publicKey', function () {
-    $publicKey = <<<EOD
------BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8kGa1pSjbSYZVebtTRBLxBz5H
-4i2p/llLCrEeQhta5kaQu/RnvuER4W8oDH3+3iuIYW4VQAzyqFpwuzjkDI+17t5t
-0tyazyZ8JXw+KgXTxldMPEL95+qVhgXvwtihXC1c5oGbRlEDvDF6Sa53rcFVsYJ4
-ehde/zUxo6UvS7UrBQIDAQAB
------END PUBLIC KEY-----
-EOD;
-
-    return $publicKey;
+    return $_ENV['public_key'];
 });
 
 
 $container->set('privateKey', function () {
-    $privateKey = <<<EOD
------BEGIN RSA PRIVATE KEY-----
-MIICXAIBAAKBgQC8kGa1pSjbSYZVebtTRBLxBz5H4i2p/llLCrEeQhta5kaQu/Rn
-vuER4W8oDH3+3iuIYW4VQAzyqFpwuzjkDI+17t5t0tyazyZ8JXw+KgXTxldMPEL9
-5+qVhgXvwtihXC1c5oGbRlEDvDF6Sa53rcFVsYJ4ehde/zUxo6UvS7UrBQIDAQAB
-AoGAb/MXV46XxCFRxNuB8LyAtmLDgi/xRnTAlMHjSACddwkyKem8//8eZtw9fzxz
-bWZ/1/doQOuHBGYZU8aDzzj59FZ78dyzNFoF91hbvZKkg+6wGyd/LrGVEB+Xre0J
-Nil0GReM2AHDNZUYRv+HYJPIOrB0CRczLQsgFJ8K6aAD6F0CQQDzbpjYdx10qgK1
-cP59UHiHjPZYC0loEsk7s+hUmT3QHerAQJMZWC11Qrn2N+ybwwNblDKv+s5qgMQ5
-5tNoQ9IfAkEAxkyffU6ythpg/H0Ixe1I2rd0GbF05biIzO/i77Det3n4YsJVlDck
-ZkcvY3SK2iRIL4c9yY6hlIhs+K9wXTtGWwJBAO9Dskl48mO7woPR9uD22jDpNSwe
-k90OMepTjzSvlhjbfuPN1IdhqvSJTDychRwn1kIJ7LQZgQ8fVz9OCFZ/6qMCQGOb
-qaGwHmUK6xzpUbbacnYrIM6nLSkXgOAwv7XXCojvY614ILTK3iXiLBOxPu5Eu13k
-eUz9sHyD6vkgZzjtxXECQAkp4Xerf5TGfQXGXhxIX52yH+N2LtujCdkQZjXAsGdm
-B2zNzvrlgRmgBrklMTrMYgm1NPcW+bRLGcwgW2PTvNM=
------END RSA PRIVATE KEY-----
-EOD;
-    return $privateKey;
+    return $_ENV['private_key'];
 });
 
 AppFactory::setContainer($container);
@@ -277,7 +253,7 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', funct
         'middlewares' => 'jwtAuth, multiTenancy, customization',
         'jwtAuth.mode' => 'required',
         'jwtAuth.secret' => $this->get('publicKey'),
-        'jwtAuth.leeway' => 0,
+        'jwtAuth.leeway' => 5,
         'jwtAuth.ttl' => 604800,
         'multiTenancy.handler' => function ($operation, $tableName) {
             if ($operation != "read" && $operation != "list") {
@@ -330,8 +306,8 @@ $app->get('/refresh', function (Request $request, Response $response, $args) {
         $token = $tokens->where('UserId', $UserId)->first();
     }
     $jwt_token = [
-        "iss" => "localhost",
-        "aud" => "localhost",
+        "iss" => $_ENV['redirect_uri'],
+        "aud" => $_ENV['redirect_uri'],
         "iat" => time(),
         'UserId' => $UserId
     ];
@@ -354,7 +330,7 @@ $app->get('/login', function (Request $request, Response $response, $args) {
     $servers_cache_table = $this->get('auth_db')->table('servers');
 
     if (isset($params['error']) && $params['error'] == 'access_denied') {
-        header('Location: http://localhost:3000/');
+        header('Location: '.$_ENV['client_url']);
         exit($params['error_description']);
     }
 
@@ -426,8 +402,8 @@ $app->get('/login', function (Request $request, Response $response, $args) {
             $names->insert($new_entries);
 
             $jwt_token = [
-                "iss" => "localhost",
-                "aud" => "localhost",
+                "iss" => $_ENV['redirect_uri'],
+                "aud" => $_ENV['redirect_uri'],
                 "iat" => time(),
                 'UserId' => $user['id']
             ];
@@ -437,7 +413,7 @@ $app->get('/login', function (Request $request, Response $response, $args) {
                 $this->get('privateKey'),
                 'RS256'
             );
-            header('Location: http://localhost:3000/auth#' . $jwt);
+            header('Location: '.$_ENV['client_url'].'/auth#' . $jwt);
             exit('Redirecting to Webapp Home Page');
         } catch (Exception $e) {
             exit('Failed to get user details' . $e->getMessage());
