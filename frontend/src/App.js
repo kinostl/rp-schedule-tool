@@ -22,51 +22,63 @@ export default class App extends React.Component {
 	}
 
 	render() {
-		let displayedSection
-		switch (this.state.section) {
-			case "MyAvailability":
-				displayedSection = (<MyAvailability api={this.props.api} />)
-				break;
-			case "ConnectedServers":
-				displayedSection = (<ConnectedServers api={this.props.api} />)
-				break;
-			case "MyCharacters":
-				displayedSection = (<MyCharacters api={this.props.api} />)
-				break;
-			case "MyStoryIdeas":
-				displayedSection = (<MyStoryIdeas api={this.props.api} />)
-				break;
-			default:
-				displayedSection = (<div>Hi, tester! Go ahead and click around.
-					 This is a tool to help you schedule Roleplaying sessions!
-					 You can add your characters, story ideas, and list your available timeslots.<br />
-					<strong>At the moment, nothing is functional. This is purely display.</strong>
-				</div>)
-				break;
-		}
-
 		return (
-			<div style={{ "width": "75%", "marginLeft": "auto", "marginRight": "auto" }}>
-				<menu style={{ "display": "flex", "justifyContent": "space-around", "listStyle": "none" }}>
-					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyAvailability')}>My Availability</button></li>
-					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'ConnectedServers')}>Connected Servers</button></li>
-					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyCharacters')}>My Characters</button></li>
-					<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyStoryIdeas')}>My Story Ideas</button></li>
-					<li>
-						{
-							this.props.user ?
-								(<button class="btn btn-secondary" onClick={(e) => {
-									e.preventDefault()
-									window.localStorage.removeItem('token')
-									document.location.replace('http://localhost:3000/')
-								}}>Logout</button>) :
-								(<a class="btn btn-secondary" href="http://localhost:8080/login">Login</a>)
-						}
-					</li>
-				</menu>
-				{displayedSection}
+			<div>
+				{
+					this.props.user ? (
+						<menu style={{ "display": "flex", "justifyContent": "space-around", "listStyle": "none" }}>
+							<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyAvailability')}>My Availability</button></li>
+							<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'ConnectedServers')}>Connected Servers</button></li>
+							<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyCharacters')}>My Characters</button></li>
+							<li><button className="btn btn-secondary" onClick={(e) => this.setSection(e, 'MyStoryIdeas')}>My Story Ideas</button></li>
+							<li><button class="btn btn-secondary" onClick={(e) => {
+								e.preventDefault()
+								window.localStorage.removeItem('token')
+								document.location.replace('http://localhost:3000/')
+							}}>Logout</button></li>
+						</menu>
+					) : null
+				}
+				<div class="mx-5">
+					{
+						this.props.user ? ((() => {
+							switch (this.state.section) {
+								case "MyAvailability":
+									return (<MyAvailability api={this.props.api} />)
+								case "ConnectedServers":
+									return (<ConnectedServers api={this.props.api} />)
+								case "MyCharacters":
+									return (<MyCharacters api={this.props.api} />)
+								case "MyStoryIdeas":
+									return (<MyStoryIdeas api={this.props.api} />)
+								default:
+									return (
+										<div class="jumbotron">
+											<h1 class="display-4">RP Scheduler</h1>
+											<p class="lead">A tool to help you schedule Roleplaying sessions!</p>
+											<hr class="my-4" />
+											<p>You can add your characters, story ideas, and list your available timeslots.</p>
+											<p>All your entries are siloed to individual Discord servers.</p>
+											<p>List your availability with My Ability</p>
+											<p>See events on your servers with Connected Servers</p>
+											<p>List your characters with My Characters</p>
+											<p>List your story ideas with My Stories Ideas</p>
+											<p>Your Story Ideas and Characters will appear under Connected Servers for all users you share a server with.</p>
+										</div>
+									)
+							}
+						})())
+							: (<div class="jumbotron mt-5">
+								<h1 class="display-4">RP Scheduler</h1>
+								<p class="lead">A tool to help you schedule Roleplaying sessions!</p>
+								<hr class="my-4" />
+								<p>You can add your characters, story ideas, and list your available timeslots.</p>
+								<p>All your entries are siloed to individual Discord servers.</p>
+								<a class="btn btn-primary btn-lg" href="http://localhost:8080/login">Login using Discord!</a>
+							</div>)
+					}
+				</div>
 			</div>
 		)
 	}
-
 }
