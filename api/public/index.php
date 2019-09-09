@@ -300,8 +300,8 @@ $app->get('/refresh', function (Request $request, Response $response, $args) {
         $token = $tokens->where('UserId', $UserId)->first();
     }
     $jwt_token = [
-        "iss" => $_ENV['redirect_uri'],
-        "aud" => $_ENV['redirect_uri'],
+        "iss" => $_ENV['my_uri'],
+        "aud" => $_ENV['my_uri'],
         "iat" => time(),
         'UserId' => $UserId
     ];
@@ -396,8 +396,8 @@ $app->get('/login', function (Request $request, Response $response, $args) {
             $names->insert($new_entries);
 
             $jwt_token = [
-                "iss" => $_ENV['redirect_uri'],
-                "aud" => $_ENV['redirect_uri'],
+                "iss" => $_ENV['my_uri'],
+                "aud" => $_ENV['my_uri'],
                 "iat" => time(),
                 'UserId' => $user['id']
             ];
