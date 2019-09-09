@@ -40,7 +40,7 @@ $container->set('auth_db', function () {
     $capsule = new \Illuminate\Database\Capsule\Manager;
     $capsule->addConnection([
         'driver' => 'mysql',
-        'host' => 'localhost',
+        'host' => $_ENV['DATABASE_URL'],
         'database' => 'rp_schedule_tool_auth',
         'username' => $_ENV['db_user'],
         'password' => $_ENV['db_pass'],
@@ -59,7 +59,7 @@ $container->set('scheduler_db', function () {
     $capsule = new \Illuminate\Database\Capsule\Manager;
     $capsule->addConnection([
         'driver' => 'mysql',
-        'host' => 'localhost',
+        'host' => $_ENV['DATABASE_URL'],
         'database' => 'rp_schedule_tool',
         'username' => $_ENV['db_user'],
         'password' => $_ENV['db_pass'],
@@ -240,8 +240,9 @@ $app->map(['POST', 'PUT', 'PATCH'], '/api/records/events', function (Request $re
 
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', function (Request $request, Response $response, $args) {
     $config = new Config([
-        'username' => 'slim',
-        'password' => 'password',
+        'address' => $_ENV['DATABASE_URL'],
+        'username' => $_ENV['db_user'],
+        'password' => $_ENV['db_pass'],
         'database' => 'rp_schedule_tool',
         'basePath' => '/api',
         'middlewares' => 'jwtAuth, multiTenancy, customization',
