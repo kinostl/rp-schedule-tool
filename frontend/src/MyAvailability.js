@@ -24,6 +24,7 @@ export default class MyAvailability extends React.Component {
 			}
 			this.setState({
 				"loading":false,
+				"saveStatus":0,
 				"servers":servers,
 				"server_names":server_names
 			})
@@ -181,6 +182,13 @@ export default class MyAvailability extends React.Component {
 						</ul>
 					</div>
 					<div style={{ "width": "50%" }}>
+						{
+							([
+								(<div>&nbsp;</div>),
+								(<div>Saving...</div>),
+								(<div>Saved</div>)
+							])[this.state.saveStatus]
+						}
 						<div className="form-group" style={{ "display": "flex", "justifyContent": "space-around" }}>
 							<button className="btn btn-success" onClick={this.handleAdd}>Available</button>
 							<button className="btn btn-danger" onClick={this.handleRemove}>Unavailable</button>
@@ -193,8 +201,14 @@ export default class MyAvailability extends React.Component {
 									"end": getUnix(event.end),
 									"ServerId":event.extendedProps.ServerId
 								}))
-								this.props.api.post('/events', events).then((res) => {
-									console.log(res)
+								this.setState({
+									"saveStatus":1
+								},()=>{
+										this.props.api.post('/events', events).then((res) => {
+											this.setState({
+												"saveStatus":2
+											})
+										})
 								})
 							}}>
 								Save
