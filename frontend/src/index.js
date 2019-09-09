@@ -11,16 +11,16 @@ ReactDOM.render(<Loading />, document.getElementById('root'));
 if (window.location.href.indexOf("auth") > -1) {
     let token = "Bearer " + window.location.hash.substr(1)
     window.localStorage.setItem('token', token)
-    document.location.replace('http://localhost:3000/')
+    document.location.replace(process.env.REACT_APP_CLIENT_URL)
 } else if (window.localStorage.getItem('token')) {
     let token = window.localStorage.getItem('token')
-    axios.get('http://localhost:8080/api/records/me', {
+    axios.get(`${process.env.REACT_APP_API_URL}/api/records/me`, {
         'headers': {
             'X-Authorization': token
         }
     }).then((user) => {
         const api = axios.create({
-            baseURL: 'http://localhost:8080/api/records',
+            baseURL: `${process.env.REACT_APP_API_URL}/api/records`,
             'headers': {
                 'X-Authorization': token
             },
@@ -30,7 +30,7 @@ if (window.location.href.indexOf("auth") > -1) {
     })
 } else {
     const api = axios.create({
-        baseURL: 'http://localhost:8080/api/records',
+        baseURL: `${process.env.REACT_APP_API_URL}/api/records`,
         timeout: 3000,
     });
     ReactDOM.render(<App api={api} />, document.getElementById('root'));

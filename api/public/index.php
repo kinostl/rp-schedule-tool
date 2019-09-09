@@ -215,25 +215,19 @@ $app->map(['POST', 'PUT', 'PATCH'], '/api/records/events', function (Request $re
         $jwt = JWT::decode($code, $publicKey, ['RS256']);
         $jwt = (array) $jwt;
         $UserId = $jwt['UserId'];
-        $earliestStart = min(array_column($params, "start"));
-        $latestEnd = max(array_column($params, "end"));
         $events = $this->get('scheduler_db')->table('events')->where([
             ['UserId', $UserId],
-            ['start', '>=', $earliestStart],
-            ['end', '<=', $latestEnd]
         ]);
         $events->delete();
         $events = $this->get('scheduler_db')->table('events');
-        $idArray = [];
+        $new_entries=[];
         foreach ($params as $param) {
             $param = (array) $param;
             $param['UserId'] = $UserId;
-            $id = $events->insertGetId(
-                $param
-            );
-            array_push($idArray, $id);
+            array_push($new_entries,$param);
         }
-        return $responder->success($idArray);
+        $events->insert($new_entries);
+        return $responder->success('');
     } catch (Exception $e) {
         $response->getBody()->write(json_encode([
             "code" => $e->getCode(),

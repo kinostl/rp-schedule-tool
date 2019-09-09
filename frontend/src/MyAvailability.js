@@ -177,7 +177,6 @@ export default class MyAvailability extends React.Component {
 					<div style={{ "width": "25%" }}>
 						<h2>My Servers</h2>
 						<ul style={{ "listStyle": "none" }}>
-							<li><input type="checkbox" /> Select All</li>
 							{checkBoxes}
 						</ul>
 					</div>

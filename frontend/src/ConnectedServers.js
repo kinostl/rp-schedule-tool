@@ -10,6 +10,7 @@ export default class ConnectedServers extends React.Component {
 			"server_names": {},
 			"selected_event": (<span>No event selected</span>),
 			"loading": true,
+			"loading_events": false,
 			"events": [],
 		}
 	}
@@ -32,6 +33,63 @@ export default class ConnectedServers extends React.Component {
 		})
 	}
 
+	componentDidUpdate(prevProps, prevState, snapshot) {
+		if (prevState.loading_events !== this.state.loading_events) {
+			let filterId = 1
+			let params = {}
+			for (let [key, value] of Object.entries(this.state.servers)) {
+				if (value) {
+					console.log("value", key)
+					params[`filter${filterId}`] = `ServerId,eq,${key}`
+					filterId = filterId + 1
+				}
+			}
+			if (filterId > 1) {
+				this.props.api.get('/events', { params: params }).then((res) => {
+					let events = res.data['records']
+					if(events.length>0){
+						let nameString = events.map((event) => event.UserId).concat(events.map((event) => event.ServerId)).join(",")
+						this.props.api.get(`/names/${nameString}`).then((names) => {
+							let temp_names = names.data
+							names = {}
+							for (const name of temp_names) {
+								names[name['id']] = name['name']
+							}
+							events = events.map((event) => ({
+								start: event.start * 1000,
+								end: event.end * 1000,
+								title: `${names[event.ServerId]} with ${names[event.UserId]}`,
+								extendedProps: {
+									User: names[event.UserId],
+									Server: names[event.ServerId],
+									ServerId: event.ServerId,
+									UserId: event.UserId
+								}
+							}))
+							this.setState({
+								"loading_events": false,
+								"selected_event": (<span>No event selected</span>),
+								"events": events
+							})
+						})
+					} else {
+						this.setState({
+							"loading_events": false,
+							"selected_event": (<span>No event selected</span>),
+							"events": []
+						})
+					}
+				})
+			} else {
+				this.setState({
+					"loading_events": false,
+					"selected_event": (<span>No event selected</span>),
+					"events":[]
+				})
+			}
+		}
+	}
+
 	render() {
 		let checkBoxes = []
 		for (const key in this.state.servers) {
@@ -45,45 +103,7 @@ export default class ConnectedServers extends React.Component {
 							...this.state.servers,
 							[key]: !this.state.servers[key]
 						},
-						"selected_event": (<span>No event selected</span>),
-						"events": []
-					}, () => {
-						let filterId = 1
-						let params = {}
-						for (let [key, value] of Object.entries(this.state.servers)) {
-							if (value) {
-								console.log("value", key)
-								params[`filter${filterId}`] = `ServerId,eq,${key}`
-								filterId = filterId + 1
-							}
-						}
-						if (filterId > 1) {
-							this.props.api.get('/events', { params: params }).then((res) => {
-								let events = res.data['records']
-								let nameString = events.map((event) => event.UserId).concat(events.map((event) => event.ServerId)).join(",")
-								this.props.api.get(`/names/${nameString}`).then((names) => {
-									let temp_names = names.data
-									names = {}
-									for (const name of temp_names) {
-										names[name['id']] = name['name']
-									}
-									events = events.map((event) => ({
-										start: event.start * 1000,
-										end: event.end * 1000,
-										title: `${names[event.ServerId]} with ${names[event.UserId]}`,
-										extendedProps: {
-											User: names[event.UserId],
-											Server: names[event.ServerId],
-											ServerId: event.ServerId,
-											UserId: event.UserId
-										}
-									}))
-									this.setState({
-										"events": events
-									})
-								})
-							})
-						}
+						"loading_events": true,
 					})
 				}} type="checkbox" /> {name}
 			</li>)

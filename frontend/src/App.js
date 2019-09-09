@@ -34,7 +34,7 @@ export default class App extends React.Component {
 							<li><button class="btn btn-secondary" onClick={(e) => {
 								e.preventDefault()
 								window.localStorage.removeItem('token')
-								document.location.replace('http://localhost:3000/')
+								document.location.replace(process.env.REACT_APP_CLIENT_URL)
 							}}>Logout</button></li>
 						</menu>
 					) : null
@@ -74,7 +74,7 @@ export default class App extends React.Component {
 								<hr class="my-4" />
 								<p>You can add your characters, story ideas, and list your available timeslots.</p>
 								<p>All your entries are siloed to individual Discord servers.</p>
-								<a class="btn btn-primary btn-lg" href="http://localhost:8080/login">Login using Discord!</a>
+								<a class="btn btn-primary btn-lg" href={`${process.env.REACT_APP_API_URL}/login`}>Login using Discord!</a>
 							</div>)
 					}
 				</div>
