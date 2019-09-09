@@ -90,6 +90,8 @@ export default class ConnectedServers extends React.Component {
 									end: event.end * 1000,
 									title: `${names[event.ServerId]} with ${names[event.UserId]}`,
 									extendedProps: {
+										User:names[event.UserId],
+										Server:names[event.ServerId],
 										ServerId: event.ServerId,
 										UserId: event.UserId
 									}
@@ -138,7 +140,7 @@ export default class ConnectedServers extends React.Component {
 									}
 									this.props.api.get(`/stories`, { params: params }).then((stories) => {
 										stories = stories.data['records']
-										let selected_event=[(<strong>{e.event.title}</strong>)]
+										let selected_event=[(<strong>{eventProps.User}'s characters and stories on {eventProps.Server}</strong>)]
 										for(let character of characters){
 											let character_stories = stories.filter((story)=>story.CharacterId===character.id)
 											let character_story_rows=[]
