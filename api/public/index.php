@@ -43,8 +43,8 @@ $container->set('auth_db', function () {
         'database' => 'rp_schedule_tool_auth',
         'username' => $_ENV['db_user'],
         'password' => $_ENV['db_pass'],
-        'charset'   => 'utf8',
-        'collation' => 'utf8_unicode_ci',
+        'charset'   => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
         'prefix'    => '',
     ]);
 
@@ -62,8 +62,8 @@ $container->set('scheduler_db', function () {
         'database' => 'rp_schedule_tool',
         'username' => $_ENV['db_user'],
         'password' => $_ENV['db_pass'],
-        'charset'   => 'utf8',
-        'collation' => 'utf8_unicode_ci',
+        'charset'   => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
         'prefix'    => '',
     ]);
 
