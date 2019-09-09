@@ -48,6 +48,13 @@ CREATE TABLE `stories`
 	CONSTRAINT `PK_Story` PRIMARY KEY  (`id`)
 );
 
+CREATE TABLE `names`
+(
+	`id` VARCHAR(255) NOT NULL,
+	`name` VARCHAR(255) NOT NULL,
+	CONSTRAINT `PK_Name` PRIMARY KEY  (`id`)
+);
+
 USE `rp_schedule_tool_auth`;
 
 CREATE TABLE `tokens`

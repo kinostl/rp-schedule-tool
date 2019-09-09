@@ -24,14 +24,14 @@ if (window.location.href.indexOf("auth") > -1) {
             'headers': {
                 'X-Authorization': token
             },
-            timeout: 1000,
+            timeout: 3000,
         });
         ReactDOM.render(<App api={api} user={user.data} />, document.getElementById('root'));
     })
 } else {
     const api = axios.create({
         baseURL: 'http://localhost:8080/api/records',
-        timeout: 1000,
+        timeout: 3000,
     });
     ReactDOM.render(<App api={api} />, document.getElementById('root'));
 }

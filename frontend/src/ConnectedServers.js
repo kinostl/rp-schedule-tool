@@ -78,13 +78,21 @@ export default class ConnectedServers extends React.Component {
 							}
 							this.props.api.get('/events', { params: params }).then((res) => {
 								let events = res.data['records']
-								events = events.map((event)=>({
-									start:event.start*1000,
-									end:event.end*1000,
-									title:`${event.ServerId} hosted by ${event.UserId}`
-								}))
-								this.setState({
-									"events":events
+								let nameString = events.map((event)=>event.UserId).concat(events.map((event)=>event.ServerId)).join(",")
+								return this.props.api.get(`/names/${nameString}`).then((names)=>{
+									let temp_names = names.data
+									names={}
+									for(const name of temp_names){
+										names[name['id']]=name['name']
+									}
+									events = events.map((event) => ({
+										start: event.start * 1000,
+										end: event.end * 1000,
+										title: `${names[event.ServerId]} hosted by ${names[event.UserId]}`
+									}))
+									this.setState({
+										"events": events
+									})
 								})
 							})
 					})

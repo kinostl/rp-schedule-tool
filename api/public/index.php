@@ -145,6 +145,12 @@ $app->get('/api/records/me', function (Request $request, Response $response, $ar
             $token
         );
         $user = $provider->getParsedResponse($user);
+        $names = $this->get('scheduler_db')->table('names');
+        $names->updateOrInsert(
+            ['id' => $user['id']],
+            ['name' => $user['username']]
+        );
+
         return $responder->success($user);
     } catch (Exception $e) {
         $response->getBody()->write(json_encode([
@@ -193,6 +199,18 @@ $app->get('/api/records/servers', function (Request $request, Response $response
                 'Servers' => json_encode($servers)
             ]
         );
+        $names = $this->get('scheduler_db')->table('names');
+        $server_ids = array_column($servers, 'id');
+        $new_entries = [];
+        foreach ($servers as $server) {
+            array_push($new_entries, [
+                'id' => $server['id'],
+                'name' => $server['name']
+            ]);
+        }
+        $names->whereIn('id', $server_ids)->delete();
+        $names->insert($new_entries);
+
         return $responder->success([
             "records" => $servers
         ]);
@@ -270,9 +288,9 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/api[/{params:.*}]', funct
         },
         'customization.beforeHandler' => function ($operation, $tableName, $request, $environment) {
             $paramString = $request->getUri()->getQuery();
-            $paramString = str_replace("%40me", $_SESSION['claims']['UserId'],$paramString);
+            $paramString = str_replace("%40me", $_SESSION['claims']['UserId'], $paramString);
             if (empty($paramString) && $operation == "list") {
-                $paramString= "filter=UserId,eq," . $_SESSION['claims']['UserId'];
+                $paramString = "filter=UserId,eq," . $_SESSION['claims']['UserId'];
             }
             $request = $request->withUri($request->getUri()->withQuery($paramString));
             return $request;
@@ -388,6 +406,24 @@ $app->get('/login', function (Request $request, Response $response, $args) {
                     'Servers' => json_encode($servers)
                 ]
             );
+
+            $names = $this->get('scheduler_db')->table('names');
+            $server_ids = array_column($servers, 'id');
+            array_push($server_ids, $user['id']);
+            $new_entries = [
+                [
+                    'id' => $user['id'],
+                    'name' => $user['username']
+                ]
+            ];
+            foreach ($servers as $server) {
+                array_push($new_entries, [
+                    'id' => $server['id'],
+                    'name' => $server['name']
+                ]);
+            }
+            $names->whereIn('id', $server_ids)->delete();
+            $names->insert($new_entries);
 
             $jwt_token = [
                 "iss" => "localhost",
