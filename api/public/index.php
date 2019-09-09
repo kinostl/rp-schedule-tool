@@ -407,7 +407,7 @@ $app->get('/login', function (Request $request, Response $response, $args) {
                 $this->get('privateKey'),
                 'RS256'
             );
-            header('Location: '.$_ENV['client_url'].'/auth#' . $jwt);
+            header('Location: '.$_ENV['client_url'].'/#' . $jwt);
             exit('Redirecting to Webapp Home Page');
         } catch (Exception $e) {
             exit('Failed to get user details' . $e->getMessage());
