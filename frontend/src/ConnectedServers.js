@@ -7,9 +7,9 @@ export default class ConnectedServers extends React.Component {
 		super()
 		this.state = {
 			"servers": {},
-			"server_names":{},
-			"selected_player": null,
-			"loading":true,
+			"server_names": {},
+			"selected_event": (<span>No event selected</span>),
+			"loading": true,
 			"events": [
 				{
 					title: 'Janice - Mjorln eats', date: '2019-08-22', extendedProps: {
@@ -35,19 +35,19 @@ export default class ConnectedServers extends React.Component {
 		}
 	}
 
-	componentDidMount(){
-		this.props.api.get('/servers').then((res)=>{
+	componentDidMount() {
+		this.props.api.get('/servers').then((res) => {
 			let serverRes = res.data['records']
-			let servers={}
-			let server_names={}
-			for(let server of serverRes){
-				servers[server['id']]=false
-				server_names[server['id']]=server['name']
+			let servers = {}
+			let server_names = {}
+			for (let server of serverRes) {
+				servers[server['id']] = false
+				server_names[server['id']] = server['name']
 			}
 			this.setState({
-				"loading":false,
-				"servers":servers,
-				"server_names":server_names
+				"loading": false,
+				"servers": servers,
+				"server_names": server_names
 			})
 
 		})
@@ -67,42 +67,46 @@ export default class ConnectedServers extends React.Component {
 							...this.state.servers,
 							[key]: e.target.checked
 						}
-					},()=>{
-							let filterId = 1
-							let params = {}
-							for (let [key, value] of Object.entries(this.state.servers)) {
-								if (value) {
-									params[`filter${filterId}`] = `ServerId,eq,${key}`
-									filterId = filterId + 1
-								}
+					}, () => {
+						let filterId = 1
+						let params = {}
+						for (let [key, value] of Object.entries(this.state.servers)) {
+							if (value) {
+								params[`filter${filterId}`] = `ServerId,eq,${key}`
+								filterId = filterId + 1
 							}
-							this.props.api.get('/events', { params: params }).then((res) => {
-								let events = res.data['records']
-								let nameString = events.map((event)=>event.UserId).concat(events.map((event)=>event.ServerId)).join(",")
-								return this.props.api.get(`/names/${nameString}`).then((names)=>{
-									let temp_names = names.data
-									names={}
-									for(const name of temp_names){
-										names[name['id']]=name['name']
+						}
+						this.props.api.get('/events', { params: params }).then((res) => {
+							let events = res.data['records']
+							let nameString = events.map((event) => event.UserId).concat(events.map((event) => event.ServerId)).join(",")
+							return this.props.api.get(`/names/${nameString}`).then((names) => {
+								let temp_names = names.data
+								names = {}
+								for (const name of temp_names) {
+									names[name['id']] = name['name']
+								}
+								events = events.map((event) => ({
+									start: event.start * 1000,
+									end: event.end * 1000,
+									title: `${names[event.ServerId]} with ${names[event.UserId]}`,
+									extendedProps: {
+										ServerId: event.ServerId,
+										UserId: event.UserId
 									}
-									events = events.map((event) => ({
-										start: event.start * 1000,
-										end: event.end * 1000,
-										title: `${names[event.ServerId]} hosted by ${names[event.UserId]}`
-									}))
-									this.setState({
-										"events": events
-									})
+								}))
+								this.setState({
+									"events": events
 								})
 							})
+						})
 					})
 				}} type="checkbox" /> {name}
 			</li>)
 		}
 
-		if (this.state.selected_player) {
-			for (const key in this.state.players[this.state.selected_player]) {
-				let character = this.state.players[this.state.selected_player][key]
+		if (this.state.selected_event) {
+			for (const key in this.state.players[this.state.selected_event]) {
+				let character = this.state.players[this.state.selected_event][key]
 				characters.push((<li>{character}</li>))
 			}
 		}
@@ -120,25 +124,62 @@ export default class ConnectedServers extends React.Component {
 					<div style={{ "width": "50%" }}>
 						<Calendar
 							defaultView="listWeek"
-							eventClick={(e)=>{
-								this.setState({"selected_player":e.event.extendedProps.player})
+							eventClick={(e) => {
+								let eventProps = e.event.extendedProps
+								this.props.api.get(`/characters?filter=UserId,eq,${eventProps.UserId}&filter=ServerId,eq,${eventProps.ServerId}`).then((characters) => {
+									console.log(characters)
+									characters = characters.data['records']
+									let character_ids = characters.map((character) => character.id)
+									let filterId = 1
+									let params = {}
+									for (let id of character_ids) {
+										params[`filter${filterId}`] = `CharacterId,eq,${id}`
+										filterId = filterId + 1
+									}
+									this.props.api.get(`/stories`, { params: params }).then((stories) => {
+										stories = stories.data['records']
+										let selected_event=[(<strong>{e.event.title}</strong>)]
+										for(let character of characters){
+											let character_stories = stories.filter((story)=>story.CharacterId===character.id)
+											let character_story_rows=[]
+											for(let character_story of character_stories){
+												character_story_rows.push(
+													<li className="list-group-item">
+														<strong>{character_story.name}</strong>
+														<p>{character_story.description}</p>
+													</li>
+												)
+											}
+
+											let character_story_list
+											if(character_story_rows.length > 0){
+												character_story_list=(<ul className="list-group list-group-flush">
+													{character_story_rows}
+												</ul>)
+											}
+
+											selected_event.push(
+												(
+													<div className="card mb-3">
+														<div className="card-header">{character.name}</div>
+														<div className="card-body">{character.description}</div>
+														{character_story_list}
+													</div>
+												)
+											)
+										}
+
+										this.setState({
+											selected_event: selected_event
+										})
+									})
+								})
 							}}
 							events={this.state.events}
 						/>
-					</div>
-					<div>
-						{
-							this.state.selected_player ? (
-								<div>
-									<span>{this.state.selected_player}</span>
-									<hr/>
-									<span>Characters</span>
-									<ul>
-										{characters}
-									</ul>
-								</div>
-							) : <span>No event selected</span>
-						}
+						<div>
+							{this.state.selected_event}
+						</div>
 					</div>
 				</div>
 			</div>
