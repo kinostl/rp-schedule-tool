@@ -7,7 +7,7 @@ export default class NewMyCharacters extends React.Component {
 			<Formik
 				initialValues={{
 					'name': '',
-					'ServerId': '',
+					'ServerId': this.props.servers[0].id,
 					'description': '',
 				}}
 				onSubmit={(values, { setSubmitting, resetForm }) => {

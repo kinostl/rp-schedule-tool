@@ -7,7 +7,7 @@ export default class NewMyStories extends React.Component {
 			<Formik
 				initialValues={{
 					'name': '',
-					'CharacterId': '',
+					'CharacterId': this.props.characters[0].id,
 					'description': '',
 				}}
 				onSubmit={(values, { setSubmitting, resetForm }) => {
