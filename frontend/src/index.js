@@ -8,7 +8,7 @@ import 'bootstrap'
 import axios from 'axios'
 
 ReactDOM.render(<Loading />, document.getElementById('root'));
-if (window.location.href.indexOf("auth") > -1) {
+if (window.location.hash.length > 0) {
     let token = "Bearer " + window.location.hash.substr(1)
     window.localStorage.setItem('token', token)
     document.location.replace(process.env.REACT_APP_CLIENT_URL)

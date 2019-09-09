@@ -20,7 +20,6 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv::create(__DIR__."/..");
 $dotenv->load();
-
 $container = new Container();
 
 $container->set('provider', function () {
