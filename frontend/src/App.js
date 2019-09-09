@@ -53,7 +53,7 @@ export default class App extends React.Component {
 									return (<MyStoryIdeas api={this.props.api} />)
 								default:
 									return (
-										<div class="jumbotron">
+										<div class="jumbotron text-center">
 											<h1 class="display-4">RP Scheduler</h1>
 											<p class="lead">A tool to help you schedule Roleplaying sessions!</p>
 											<hr class="my-4" />
@@ -68,7 +68,7 @@ export default class App extends React.Component {
 									)
 							}
 						})())
-							: (<div class="jumbotron mt-5">
+							: (<div class="jumbotron mt-5 text-center">
 								<h1 class="display-4">RP Scheduler</h1>
 								<p class="lead">A tool to help you schedule Roleplaying sessions!</p>
 								<hr class="my-4" />
