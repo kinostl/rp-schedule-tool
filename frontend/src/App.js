@@ -57,6 +57,7 @@ export default class App extends React.Component {
 											<h1 class="display-4">RP Scheduler</h1>
 											<p class="lead">A tool to help you schedule Roleplaying sessions!</p>
 											<hr class="my-4" />
+											<strong>If you have any suggestions you can click <a href="https://github.com/kinostl/rp-schedule-tool/issues">here</a> or on the top right</strong>
 											<p>You can add your characters, story ideas, and list your available timeslots.</p>
 											<p>All your entries are siloed to individual Discord servers.</p>
 											<p>List your availability with My Ability</p>
