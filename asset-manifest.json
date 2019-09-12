@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/rp-scheduler/static/css/main.c5456ec5.chunk.css",
-    "main.js": "/rp-scheduler/static/js/main.2c89ce29.chunk.js",
-    "main.js.map": "/rp-scheduler/static/js/main.2c89ce29.chunk.js.map",
-    "runtime~main.js": "/rp-scheduler/static/js/runtime~main.6d0be274.js",
-    "runtime~main.js.map": "/rp-scheduler/static/js/runtime~main.6d0be274.js.map",
-    "static/css/2.4651173f.chunk.css": "/rp-scheduler/static/css/2.4651173f.chunk.css",
-    "static/js/2.421ce264.chunk.js": "/rp-scheduler/static/js/2.421ce264.chunk.js",
-    "static/js/2.421ce264.chunk.js.map": "/rp-scheduler/static/js/2.421ce264.chunk.js.map",
-    "index.html": "/rp-scheduler/index.html",
-    "precache-manifest.cc1f17c8b764b228c24984c3da968d2b.js": "/rp-scheduler/precache-manifest.cc1f17c8b764b228c24984c3da968d2b.js",
-    "service-worker.js": "/rp-scheduler/service-worker.js",
-    "static/css/2.4651173f.chunk.css.map": "/rp-scheduler/static/css/2.4651173f.chunk.css.map",
-    "static/css/main.c5456ec5.chunk.css.map": "/rp-scheduler/static/css/main.c5456ec5.chunk.css.map",
-    "static/media/main.scss": "/rp-scheduler/static/media/fa-solid-900.d6d8d5da.woff2"
+    "main.css": "/rp-schedule-tool/static/css/main.c5456ec5.chunk.css",
+    "main.js": "/rp-schedule-tool/static/js/main.fab4751e.chunk.js",
+    "main.js.map": "/rp-schedule-tool/static/js/main.fab4751e.chunk.js.map",
+    "runtime~main.js": "/rp-schedule-tool/static/js/runtime~main.2b854a2f.js",
+    "runtime~main.js.map": "/rp-schedule-tool/static/js/runtime~main.2b854a2f.js.map",
+    "static/css/2.7c12d29b.chunk.css": "/rp-schedule-tool/static/css/2.7c12d29b.chunk.css",
+    "static/js/2.421ce264.chunk.js": "/rp-schedule-tool/static/js/2.421ce264.chunk.js",
+    "static/js/2.421ce264.chunk.js.map": "/rp-schedule-tool/static/js/2.421ce264.chunk.js.map",
+    "index.html": "/rp-schedule-tool/index.html",
+    "precache-manifest.a29e4ffd1d9d6ffbc61cde78d2d102b8.js": "/rp-schedule-tool/precache-manifest.a29e4ffd1d9d6ffbc61cde78d2d102b8.js",
+    "service-worker.js": "/rp-schedule-tool/service-worker.js",
+    "static/css/2.7c12d29b.chunk.css.map": "/rp-schedule-tool/static/css/2.7c12d29b.chunk.css.map",
+    "static/css/main.c5456ec5.chunk.css.map": "/rp-schedule-tool/static/css/main.c5456ec5.chunk.css.map",
+    "static/media/main.scss": "/rp-schedule-tool/static/media/fa-solid-900.d6d8d5da.woff2"
   }
 }
