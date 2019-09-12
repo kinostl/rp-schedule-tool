@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactMarkdown from 'react-markdown';
 
 import Calendar from './Calendar';
 
@@ -144,7 +145,7 @@ export default class ConnectedServers extends React.Component {
 												character_story_rows.push(
 													<li className="list-group-item">
 														<strong>{character_story.name}</strong>
-														<p>{character_story.description}</p>
+														<p><ReactMarkdown source={character_story.description} /></p>
 													</li>
 												)
 											}
@@ -160,7 +161,7 @@ export default class ConnectedServers extends React.Component {
 												(
 													<div className="card mb-3">
 														<div className="card-header">{character.name}</div>
-														<div className="card-body">{character.description}</div>
+														<div className="card-body"><ReactMarkdown source={character.description} /></div>
 														{character_story_list}
 													</div>
 												)
