@@ -74,7 +74,10 @@ export default class App extends React.Component {
 								<hr class="my-4" />
 								<p>You can add your characters, story ideas, and list your available timeslots.</p>
 								<p>All your entries are siloed to individual Discord servers.</p>
-								<a class="btn btn-primary btn-lg" href={`${process.env.REACT_APP_API_URL}/login`}>Login using Discord!</a>
+								<button class="btn btn-primary btn-lg" onClick={(e)=>{
+									e.preventDefault()
+									document.location.replace(`${process.env.REACT_APP_API_URL}/login`)
+								}}>Login using Discord!</button>
 							</div>)
 					}
 				</div>

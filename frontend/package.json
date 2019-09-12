@@ -2,7 +2,7 @@
 	"name": "frontend",
 	"version": "0.1.0",
 	"private": true,
-	"homepage": "http://199.195.250.105/rp-scheduler/",
+	"homepage": "https://kinostl.github.io/rp-schedule-tool/",
 	"dependencies": {
 		"@fullcalendar/bootstrap": "^4.3.0",
 		"@fullcalendar/core": "^4.3.1",
