@@ -17,7 +17,7 @@
 		"client-oauth2": "^4.2.5",
 		"formik": "^1.5.8",
 		"gh-pages": "^2.1.1",
-		"jquery": "^3.4.1",
+		"jquery": "^3.5.0",
 		"luxon": "^1.17.2",
 		"popper.js": "^1.15.0",
 		"react": "^16.9.0",
